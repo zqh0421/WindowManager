@@ -3,3 +3,4 @@ public
 dist
 build
 .husky
+*.config.js
