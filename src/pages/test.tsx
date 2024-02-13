@@ -1,8 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '/electron-vite.animate.svg';
+import { getAnswer } from '@/api/chat';
+
+export interface IWindow {
+  id: string;
+  title: string;
+}
 
 const Test = () => {
+  const [windows, setWindows] = useState<Array<IWindow>>([]);
+
+  useEffect(() => {
+    console.log(windows);
+  }, [windows]);
+
+  const handleTestLangchainAPI = async () => {
+    const answer = await getAnswer('Hello, nice to see you!');
+    console.log(answer);
+  };
+
+  const handleOpenDevTools = () => {
+    window.electron.send('open-dev-tools');
+  };
+
+  const getOpenWindows = () => {
+    window.electron.getOpenWindows().then((openWindows) => setWindows(openWindows));
+  };
+
+  const getAllWindows = async () => {
+    try {
+      const allWindows = await window.electron.getAllWindows();
+      setWindows(allWindows);
+    } catch (error) {
+      console.error('Failed to fetch windows:', error);
+    }
+  };
+
   return (
     <React.Fragment>
       <Link to={'/'}>Back to Home</Link>
@@ -14,7 +48,15 @@ const Test = () => {
         <span>⚡ Test Page ⚡</span>
       </div>
       <div className='mt-1 w-full flex-wrap flex justify-center'></div>
-      <button>Click to Test Langchain API</button>
+      <button onClick={handleTestLangchainAPI}>Click to Test Langchain API</button>
+      <button onClick={handleOpenDevTools}>Open Dev Tools</button>
+      <button onClick={getOpenWindows}>Get Open Windows</button>
+      <ul>
+        {windows.map((window, index) => (
+          <li key={index}>{window.title}</li>
+        ))}
+      </ul>
+      <button onClick={getAllWindows}>Get All Windows</button>
     </React.Fragment>
   );
 };

@@ -21,5 +21,10 @@ export default defineConfig({
       // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
       renderer: {}
     })
-  ]
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  }
 });

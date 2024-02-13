@@ -6,6 +6,21 @@ import { contextBridge, ipcRenderer } from 'electron';
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer));
 
+// 新增暴露给渲染进程的API
+contextBridge.exposeInMainWorld('electron', {
+  send: (channel: string, data?: any) => {
+    // 定义允许的频道列表
+    const validChannels = ['open-dev-tools', 'get-open-windows'];
+    // 检查频道名是否在列表中
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+  getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
+  getAllWindows: () => ipcRenderer.invoke('get-all-windows')
+  // 可以在此处添加更多方法，例如接收主进程消息的方法
+});
+
 // `exposeInMainWorld` can't detect attributes and methods of `prototype`, manually patching it.
 function withPrototype(obj: Record<string, any>) {
   const protos = Object.getPrototypeOf(obj);
