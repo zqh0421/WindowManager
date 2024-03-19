@@ -10,14 +10,17 @@ contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer));
 contextBridge.exposeInMainWorld('electron', {
   send: (channel: string, data?: any) => {
     // 定义允许的频道列表
-    const validChannels = ['open-dev-tools', 'get-open-windows'];
+    const validChannels = ['open-dev-tools', 'get-open-windows', 'open-external'];
     // 检查频道名是否在列表中
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
   },
   getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
-  getAllWindows: () => ipcRenderer.invoke('get-all-windows')
+  getAllWindows: () => ipcRenderer.invoke('get-all-windows'),
+  getAllWindowsDetail: () => ipcRenderer.invoke('get-all-windows-detail'),
+  recordAppActivity: () => ipcRenderer.invoke('record-app-activity'),
+  openExternal: (url: string) => ipcRenderer.send('open-external', url)
   // 可以在此处添加更多方法，例如接收主进程消息的方法
 });
 

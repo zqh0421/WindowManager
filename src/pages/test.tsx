@@ -6,6 +6,9 @@ import { getAnswer } from '@/api/chat';
 export interface IWindow {
   id: string;
   title: string;
+  position: string;
+  processName: string;
+  size: string;
 }
 
 const Test = () => {
@@ -37,6 +40,20 @@ const Test = () => {
     }
   };
 
+  const getAllWindowsDetail = async () => {
+    try {
+      const allWindows = await window.electron.getAllWindowsDetail();
+      setWindows(allWindows);
+    } catch (error) {
+      console.error('Failed to fetch windows:', error);
+    }
+  };
+
+  const openWebPage = () => {
+    // Ensure the electron object is available before using it
+    window.electron.send('open-external', 'https://google.com');
+  };
+
   return (
     <React.Fragment>
       <Link to={'/'}>Back to Home</Link>
@@ -56,7 +73,19 @@ const Test = () => {
           <li key={index}>{window.title}</li>
         ))}
       </ul>
+      <ul>
+        {windows.map((window, index) => (
+          <li key={index}>
+            <p>{window.processName}</p>
+            <p>{window.title}</p>
+            <p>{window.position}</p>
+            <p>{window.size}</p>
+          </li>
+        ))}
+      </ul>
       <button onClick={getAllWindows}>Get All Windows</button>
+      <button onClick={getAllWindowsDetail}>Get All Windows Details</button>
+      <button onClick={openWebPage}>打开外部网页</button>
     </React.Fragment>
   );
 };

@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
-import { exec } from 'child_process';
+import { recordWindowUsage } from './utils';
+import { registerHandlers } from './handlers';
 
 // The built directory structure
 //
@@ -11,6 +12,7 @@ import { exec } from 'child_process';
 // │ │ ├── main.js
 // │ │ └── preload.js
 // │
+
 process.env.DIST = path.join(__dirname, '../dist');
 process.env.VITE_PUBLIC = app.isPackaged
   ? process.env.DIST
@@ -26,6 +28,7 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true // 保持启用状态
+      // nodeIntegration: false
     }
   });
 
@@ -43,40 +46,8 @@ function createWindow() {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
 
-  // 事件监听
-  ipcMain.on('open-dev-tools', () => {
-    win?.webContents.openDevTools();
-  });
-
-  ipcMain.handle('get-open-windows', () => {
-    const windows = BrowserWindow.getAllWindows().map((window) => ({
-      id: window.id,
-      title: window.getTitle()
-    }));
-    return windows;
-  });
-
-  ipcMain.handle('get-all-windows', async (e) => {
-    console.log(e);
-    return new Promise((resolve, reject) => {
-      // macOS命令示例，其他操作系统需要相应调整
-      exec(
-        `osascript -e 'tell application "System Events" to get the title of every window of every process'`,
-        (error, stdout) => {
-          if (error) {
-            console.error(`exec error: ${error}`);
-            return reject(error);
-          }
-          console.log(stdout);
-          const titles = stdout
-            .split(',')
-            .filter((title) => title.trim() !== '')
-            .map((title) => title.trim());
-          resolve(titles);
-        }
-      );
-    });
-  });
+  // Register the event handlers
+  registerHandlers(win);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -98,3 +69,11 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
+
+// 每隔5秒执行一次检测
+setInterval(recordWindowUsage, 5000);
+
+app.on('before-quit', () => {
+  // 确保在应用退出前完成最后一次活动窗口的记录
+  recordWindowUsage();
+});
