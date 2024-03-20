@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import react from '@vitejs/plugin-react';
+import { builtinModules } from 'node:module';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,7 +11,21 @@ export default defineConfig({
     electron({
       main: {
         // Shortcut of `build.lib.entry`.
-        entry: 'electron/main.ts'
+        entry: 'electron/main.ts',
+        vite: {
+          // The `vite` option will be passed to the `vite` instance.
+          // See 👉 https://vitejs.dev/config/
+          build: {
+            rollupOptions: {
+              external: [
+                'better-sqlite3',
+                'sqlite3',
+                'serialport'
+                // other `C/C++` addons
+              ]
+            }
+          }
+        }
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.
@@ -24,13 +39,15 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, 'src'),
+      'electron/dist':
+        'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js'
     }
   },
   build: {
     // ...
     rollupOptions: {
-      external: ['electron', 'sqlite3']
+      external: [...builtinModules, 'electron', 'better-sqlite3']
       // ...
     }
   }

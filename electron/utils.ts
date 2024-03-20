@@ -1,38 +1,64 @@
 import { exec } from 'child_process';
-import { getWindowsFrontmost } from './osScripts';
+import * as os from 'os';
+import { OSScript } from './osScripts';
 
-let lastWindowTitle = '';
-let lastStartTime = Date.now();
-let count = 0;
+// Define a type for the processor function to avoid 'any'
+type ResultProcessor = (stdout: string) => void;
 
-export function recordWindowUsage() {
-  console.log(count++);
-  // macOS平台上执行AppleScript
-  exec(getWindowsFrontmost.appleScript, (error, stdout) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
-      return;
+export const executePlatformSpecificCommand = async (
+  osScript: OSScript,
+  resultProcessor: ResultProcessor
+) => {
+  return new Promise((resolve, reject) => {
+    const platform = os.platform();
+    let command: string | undefined = '';
+
+    switch (platform) {
+      case 'darwin':
+        command = osScript.appleScript;
+        break;
+      case 'linux': // 'wmctrl -l'
+        command = osScript.linuxCommand;
+        break;
+      case 'win32': // 'powershell -Command "Get-Process | Select-Object Name"'
+        command = osScript.windowsCommand;
+        break;
+      default:
+        return reject(new Error(`Unsupported platform: ${platform}`));
     }
-    const output = stdout.trim().split(', ');
-    console.log(output);
-    const currentWindowTitle = output[1] || 'Unknown'; // 假设输出的第二部分是窗口标题
-    const currentTime = Date.now();
 
-    if (currentWindowTitle !== lastWindowTitle) {
-      const duration = currentTime - lastStartTime; // 持续时间，毫秒
-
-      console.log(lastWindowTitle, new Date(lastStartTime).toISOString(), duration);
-      // // 将数据插入数据库
-      // db.run('INSERT INTO window_usage (app_name, window_title, start_time, duration) VALUES (?, ?, ?, ?)', ['System Events', lastWindowTitle, new Date(lastStartTime).toISOString(), duration], function(err) {
-      //   if (err) {
-      //     return console.error(err.message);
-      //   }
-      //   console.log(`A row has been inserted with rowid ${this.lastID}`);
-      // });
-
-      // 更新上一个窗口标题和开始时间
-      lastWindowTitle = currentWindowTitle;
-      lastStartTime = currentTime;
+    if (!command) {
+      return reject(new Error(`No command provided for platform: ${platform}`));
     }
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Exec error: ${error}`);
+        return reject(stderr || error);
+      }
+      resolve(resultProcessor(stdout));
+    });
   });
-}
+};
+
+export const parseTitlesFromStdout = (stdout: string) => {
+  return stdout
+    .split(',')
+    .filter((title) => title.trim() !== '')
+    .map((title) => title.trim());
+};
+
+export const parseWindowsInfoFromStdout = (stdout: string) => {
+  return stdout
+    .trim()
+    .split('\n')
+    .map((line) => {
+      const parts = line.split(', '); // Assuming each property is separated by ', '
+      return {
+        processName: parts[0],
+        title: parts[1],
+        position: parts[2],
+        size: parts[3]
+      };
+    });
+};

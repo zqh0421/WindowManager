@@ -3,9 +3,9 @@
  */
 {
   $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
-  appId: 'YourAppID',
+  appId: 'windowmanager',
   asar: true,
-  productName: 'YourAppName',
+  productName: 'Window Manager',
   directories: {
     output: 'release/${version}'
   },
@@ -32,5 +32,10 @@
   linux: {
     target: ['AppImage'],
     artifactName: '${productName}-Linux-${version}.${ext}'
+  },
+  build: {
+    extraResources: [
+      './database/database.db'
+    ]
   }
 }

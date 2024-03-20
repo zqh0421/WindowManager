@@ -1,7 +1,8 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
-import { recordWindowUsage } from './utils';
+import { recordWindowUsage } from './recorder';
 import { registerHandlers } from './handlers';
+// import { db, createTables } from './database/index';
 
 // The built directory structure
 //
@@ -69,6 +70,7 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
+// app.whenReady().then(createTables);
 
 // 每隔5秒执行一次检测
 setInterval(recordWindowUsage, 5000);

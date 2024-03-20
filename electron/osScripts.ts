@@ -60,17 +60,12 @@ export const getWindowsFrontmost = {
   appleScript: `
   osascript -e '
   tell application "System Events"
-  set processList to every process
-  set output to ""
-    repeat with aProcess in processList
-    set theProcessName to name of aProcess
-      try
-        set theWindows to every window of aProcess
-      on error errMsg
-        -- 错误处理，比如记录无窗口的进程或跳过
-      end try
-  end repeat
-  output
+    set frontAppName to name of first application process whose frontmost is true
+    set frontWindow to first window of (first application process whose frontmost is true)
+    set windowTitle to name of frontWindow
+    set windowPosition to position of frontWindow
+    set windowSize to size of frontWindow
+    return {frontAppName, windowTitle, windowPosition, windowSize}
   end tell
   '`
 };
