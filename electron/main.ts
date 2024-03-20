@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { recordWindowUsage } from './recorder';
 import { registerHandlers } from './handlers';
-import { dbOperations } from '~/sqlite/index';
+import { dbOperations } from '../sqlite/index';
 
 // The built directory structure
 //

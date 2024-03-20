@@ -1,6 +1,9 @@
+import { app } from 'electron';
 import Database from 'better-sqlite3';
+import path from 'path';
 
-// 初始化数据库
-const db = new Database('~/database.db', { verbose: console.log });
+const userDataPath = app.getAppPath();
+const dbPath = path.join(userDataPath, 'database.db');
+const db = new Database(dbPath);
 
 export default db;

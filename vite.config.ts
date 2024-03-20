@@ -39,8 +39,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '~': path.resolve(__dirname, '.') // The root directory
+      '@': path.resolve(__dirname, 'src')
     }
   },
   build: {
