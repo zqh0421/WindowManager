@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { recordWindowUsage } from './recorder';
 import { registerHandlers } from './handlers';
-// import { db, createTables } from './database/index';
+import { dbOperations } from '~/sqlite/index';
 
 // The built directory structure
 //
@@ -70,12 +70,13 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
-// app.whenReady().then(createTables);
+app.whenReady().then(dbOperations.createTables);
 
-// 每隔5秒执行一次检测
-setInterval(recordWindowUsage, 5000);
+// 每隔60秒执行一次检测
+setInterval(recordWindowUsage, 60 * 1000);
 
 app.on('before-quit', () => {
   // 确保在应用退出前完成最后一次活动窗口的记录
   recordWindowUsage();
+  dbOperations.closeDb();
 });

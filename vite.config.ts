@@ -40,8 +40,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      'electron/dist':
-        'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js'
+      '~': path.resolve(__dirname, '.') // The root directory
     }
   },
   build: {

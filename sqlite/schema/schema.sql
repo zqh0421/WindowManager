@@ -1,0 +1,55 @@
+-- Create the User table
+CREATE TABLE IF NOT EXISTS User (
+  UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+  Username TEXT NOT NULL
+);
+
+-- Create the Layout Selection History table
+CREATE TABLE IF NOT EXISTS LayoutSelectionHistory (
+  SelectionID INTEGER PRIMARY KEY AUTOINCREMENT,
+  UserID INTEGER,
+  LayoutID INTEGER,
+  Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (UserID) REFERENCES User(UserID),
+  FOREIGN KEY (LayoutID) REFERENCES Layout(LayoutID)
+);
+
+-- Create the Command History table
+CREATE TABLE IF NOT EXISTS CommandHistory (
+  CommandID INTEGER PRIMARY KEY AUTOINCREMENT,
+  UserID INTEGER,
+  CommandText TEXT NOT NULL,
+  ExecutionTime DATETIME DEFAULT CURRENT_TIMESTAMP,
+  IsSatisfied BOOLEAN,
+  FOREIGN KEY(UserID) REFERENCES User(UserID)
+);
+
+-- Create the App Activity table
+CREATE TABLE IF NOT EXISTS AppActivity (
+  UsageID INTEGER PRIMARY KEY AUTOINCREMENT,
+  UserID INTEGER,
+  AppName TEXT NOT NULL,
+  StartTime DATETIME,
+  EndTime DATETIME,
+  Duration INTEGER, -- 可以存储为秒数
+  FOREIGN KEY(UserID) REFERENCES User(UserID)
+);
+
+-- Create the Layout table
+CREATE TABLE IF NOT EXISTS Layout (
+  LayoutID INTEGER PRIMARY KEY AUTOINCREMENT,
+  LayoutType TEXT NOT NULL,
+  Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the Layout Detail table
+CREATE TABLE IF NOT EXISTS LayoutDetail (
+  DetailID INTEGER PRIMARY KEY AUTOINCREMENT,
+  LayoutID INTEGER,
+  Position TEXT NOT NULL,
+  AppName TEXT NOT NULL,
+  AppPath TEXT NOT NULL,
+  WindowName TEXT NOT NULL,
+  Size TEXT NOT NULL,
+  FOREIGN KEY(LayoutID) REFERENCES Layout(LayoutID)
+);
