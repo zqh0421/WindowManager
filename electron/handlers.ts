@@ -1,4 +1,4 @@
-import { ipcMain, shell, BrowserWindow } from 'electron';
+import { ipcMain, shell, BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import {
   recordAppActivity,
   getAllWindows,
@@ -21,6 +21,13 @@ const registerHandlers = (win: BrowserWindow | null) => {
   ipcMain.on('open-external', async (_, url: string) => {
     console.log(`Opening ${url}`);
     await shell.openExternal(url);
+  });
+
+  ipcMain.on('adjust-window-size', (event: IpcMainInvokeEvent, data: { height: number }) => {
+    const currentWindow = BrowserWindow.fromWebContents(event.sender);
+    if (currentWindow) {
+      currentWindow.setSize(currentWindow.getSize()[0], data.height, true);
+    }
   });
 
   // 事件监听 - 获取所有窗口

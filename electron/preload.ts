@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.send(channel, data);
     }
   },
+  receive: (channel: string, listener: (...args: any[]) => void) => {
+    ipcRenderer.on(channel, listener);
+  },
   getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
   getAllWindows: () => ipcRenderer.invoke('get-all-windows'),
   getAllWindowsName: () => ipcRenderer.invoke('get-all-windows-name'),

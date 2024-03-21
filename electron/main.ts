@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut } from 'electron';
+import { app, BrowserWindow, globalShortcut, Tray, Menu, screen } from 'electron';
 import path from 'node:path';
 import { recordWindowUsage } from './recorder';
 import { registerHandlers } from './handlers';
@@ -20,11 +20,21 @@ process.env.VITE_PUBLIC = app.isPackaged
   : path.join(process.env.DIST, '../public');
 
 let win: BrowserWindow | null;
+let tray: Tray | null;
+
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 
 function createWindow() {
+  // 获取屏幕尺寸
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
   win = new BrowserWindow({
+    width: width / 2, // 屏幕宽度的一半
+    height: height / 2, // 根据内容高度，这里只是一个初始值
+    x: width / 4, // 在屏幕中心
+    y: height * 0.1, // 从屏幕顶部开始
+    resizable: false, // 不允许用户调整窗口尺寸
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     frame: false, // 隐藏默认的窗口标题栏
     webPreferences: {
@@ -33,9 +43,6 @@ function createWindow() {
       // nodeIntegration: false
     }
   });
-
-  win.webContents.openDevTools();
-
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString());
@@ -48,9 +55,22 @@ function createWindow() {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
 
+  // Hide the window when it loses focus
+  win.on('blur', () => {
+    win?.hide();
+  });
+
   // Register the event handlers
   registerHandlers(win);
 }
+
+const initWindow = () => {
+  if (win) {
+    win.show();
+  } else {
+    createWindow();
+  }
+};
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -70,7 +90,43 @@ app.on('activate', () => {
   }
 });
 
-app.whenReady().then(createWindow);
+function createTray() {
+  tray = new Tray(path.join(process.env.VITE_PUBLIC, '5688008.png'));
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '打开应用',
+      click: () => {
+        initWindow();
+      }
+    },
+    {
+      label: '退出',
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setToolTip('Your App');
+  tray.setContextMenu(contextMenu);
+}
+
+app
+  .whenReady()
+  .then(() => {
+    initWindow();
+  })
+  .catch((error) => console.error('Error creating window:', error));
+app
+  .whenReady()
+  .then(() => {
+    if (process.platform === 'darwin' && app.dock) app.dock.hide();
+    createTray();
+    // 添加日志
+    console.log('Tray created:', tray);
+  })
+  .catch((error) => console.error('Error creating tray:', error));
 app
   .whenReady()
   .then(() => {
@@ -79,7 +135,8 @@ app
   .then(() => {
     // 每隔60秒执行一次检测
     setInterval(recordWindowUsage, 60 * 1000);
-  });
+  })
+  .catch((error) => console.error('Error initializing database or timer:', error));
 
 app.whenReady().then(() => {
   // 设置全局快捷键
@@ -98,10 +155,19 @@ app.whenReady().then(() => {
       }
     }
   });
+
+  globalShortcut.register('Escape', () => {
+    // 这里执行按下Esc时你想做的操作
+    if (win) {
+      win.hide(); // 隐藏当前窗口
+    }
+  });
 });
 
 app.on('before-quit', () => {
   // 确保在应用退出前完成最后一次活动窗口的记录
   recordWindowUsage();
   dbOperations.closeDb();
+  globalShortcut.unregisterAll();
+  win?.removeAllListeners();
 });

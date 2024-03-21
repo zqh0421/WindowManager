@@ -1,16 +1,16 @@
 import { ChatOpenAI } from '@langchain/openai';
 import OpenAI from 'openai';
 
-// 创建ChatOpenAI模型实例
-const chatModel = new ChatOpenAI({
-  // 在这里配置模型参数，如温度和其他选项
-  openAIApiKey: import.meta.env.VITE_PUBLIC_OPENAI_API_KEY,
-  modelName: 'gpt-4',
-  temperature: 0
-});
-
 // 使用LangChain来调用ChatOpenAI模型并获得回答
-export async function getAnswer(message: string) {
+export async function getAnswer(message: string, model: string = 'gpt-4') {
+  // 创建ChatOpenAI模型实例
+  const chatModel = new ChatOpenAI({
+    // 在这里配置模型参数，如温度和其他选项
+    openAIApiKey: import.meta.env.VITE_PUBLIC_OPENAI_API_KEY,
+    modelName: model,
+    temperature: 0
+  });
+
   try {
     // 调用模型并等待回答
     const answerMessage = await chatModel.invoke(message);
@@ -19,9 +19,6 @@ export async function getAnswer(message: string) {
     if (answerMessage) {
       // 获取回答内容
       const answer = answerMessage.content;
-
-      // 在这里使用回答，比如在界面上显示给用户
-      console.log('Answer:', answer);
       return answer;
     } else {
       console.error('Unexpected response from model.');

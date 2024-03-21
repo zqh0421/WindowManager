@@ -65,48 +65,34 @@ const Test = () => {
     // 1st: get (Available app list) & (Currently Open Window List)
     // 2nd: Interact with LangChain to get the recommended layout
     const allWindows = await window.electron.getAllWindowsName();
+    console.log(`Runtime: ${(Date.now() - startTime) / 1000} seconds`);
     const answer = await getAnswer(`
       You are a window management assistant.
       Please group the currently open windows according to their relevance for operating specific tasks.
       For each task, plan the layout of each window. If not relevant, please leave a single window alone.
       For example:
-      Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang, -438, 1512864 and wpsoffice, WPS Office, 038, 1512868 together, for writing a paper draft.
+        Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang and wpsoffice, WPS Office together, for writing a paper draft.
       Currently open windows are as follows: 
-      title:
-      appName, windowTitle
-      items:
-      ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+        title:
+        appName, windowTitle
+        items:
+        ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
       ONLY return the recommended layout for the windows in the format as follows:
-      {
-        "layout": [
-          {
-            "task": "task1",
-            "windows": [
-              {
-                "appName": "app1",
-                "windowTitle": "window1",
-                "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
-                "description": "description1" // e.g. writing, reading, browsing, coding, etc.
-              },
-              {
-                "appName": "app1",
-                "windowTitle": "window1",
-                "windowManagement": "management method2",
-              }
-            ]
-          },
-          {
-            "task": "task2",
-            "windows": [
-              {
-                "appName": "app3",
-                "windowTitle": "window3",
-                "windowManagement": "management method3",
-              }
-            ]
-          }
-        ]
-      }
+        {
+          "layout": [
+            {
+              "task": "task1",
+              "windows": [
+                {
+                  "appName": "app1",
+                  "windowTitle": "window1",
+                  "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
+                  "description": "description1" // e.g. writing, reading, browsing, coding, etc.
+                },
+              ]
+            },
+          ]
+        }
       DO NOT RETURN ANYTHING ELSE.
       `);
     const endTime = Date.now();
@@ -120,58 +106,132 @@ const Test = () => {
   const getLayoutBasedOnCommand = async () => {
     const startTime = Date.now();
     const allWindows = await window.electron.getAllWindowsDetail();
-    const answer = await getAnswer(`
+    console.log(`Runtime: ${(Date.now() - startTime) / 1000} seconds`);
+    const ans = await getAnswer(`
       You are a window management assistant.
-      Please group the currently open windows according to their relevance for operating specific tasks.
-      For each task, plan the layout of each window. If not relevant, please leave a single window alone.
-      Please plan the possible layout ONLY based on user's command and RELEVANT currently open windows.
-      For example:
-      Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang, -438, 1512864 and wpsoffice, WPS Office, 038, 1512868 together, for writing a paper draft.
+      Please filter the currently open windows according to their relevance for operating specific tasks based on User's Command.
       User's Command: ${command}
       Currently open windows are as follows: 
       title:
-      appName, windowTitle, windowPosition, windowSize
+      appName, windowTitle
       items:
-      ${allWindows
-        .map(
-          (window) => `${window.processName}, ${window.title}, ${window.position}, ${window.size}`
-        )
-        .join('\n')}
-      ONLY return the recommended layout for the windows in the format as follows:
+      ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+      ONLY return the relevant windows in the format as follows:
       {
-        "layout": [
+        "windows": [
           {
-            "task": "task1",
-            "windows": [
-              {
-                "appName": "app1",
-                "windowTitle": "window1",
-                "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
-                "description": "description1" // e.g. writing, reading, browsing, coding, etc.
-              },
-              {
-                "appName": "app1",
-                "windowTitle": "window1",
-                "windowManagement": "management method2",
-              }
-            ]
+            "windowId": "A specific id to distinguish the window",
+            "appName": "app1",
+            "windowTitle": "window1",
           },
-          {
-            "task": "task2",
-            "windows": [
-              {
-                "appName": "app3",
-                "windowTitle": "window3",
-                "windowManagement": "management method3",
-              }
-            ]
-          }
         ]
-      }
+        },
       DO NOT RETURN ANYTHING ELSE.
-      `);
+    `);
+    console.log(`Runtime: ${(Date.now() - startTime) / 1000} seconds`);
+
+    const [desc, layout] = await Promise.all([
+      // 生成描述的任务
+      await getAnswer(`
+        You are a window management assistant.
+        Give me the description (e.g. writing, reading, browsing, coding, etc.) of each Relevant Window based on User's Command.
+        User's Command: ${command}
+        Relevant Windows are as follows:
+          ${ans}
+        ONLY return the description for each window in the format as follows:
+        {
+          "desc": ["description for window1" , ...]
+        }
+        DO NOT RETURN ANYTHING ELSE.
+      `),
+      // 生成布局的任务
+      await getAnswer(`
+        You are a window management assistant.
+        Based on Relevant Windows, plan their layout ONLY based on User's Command and Relevant Windows to execute specific tasks.
+        For example:
+        Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang and wpsoffice, WPS Office together, for writing a paper draft.
+        User's Command: ${command}
+        Relevant Windows are as follows:
+          ${ans}
+        ONLY return the recommended layout for the windows in the format as follows:
+        {
+          "layout":
+            {
+              "task": "task1",
+              "windows": [
+                {
+                  "windowId": "As is given in the previous step",
+                  "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
+                },
+                {
+                  "appName": "app1",
+                  "windowTitle": "window1",
+                  "windowManagement": "management method2",
+                }
+              ]
+            },
+            {
+              "task": "task2",
+              "windows": [
+                {
+                  "appName": "app3",
+                  "windowTitle": "window3",
+                  "windowManagement": "management method3",
+                }
+              ]
+            }
+          ]
+        }
+        DO NOT RETURN ANYTHING ELSE.
+      `)
+    ]);
+    // const answer = await getAnswer(`
+    //   You are a window management assistant.
+    //   Based on Relevant Windows, plan their layout ONLY based on User's Command and Relevant Windows to execute specific tasks.
+    //   For example:
+    //   Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang and wpsoffice, WPS Office together, for writing a paper draft.
+    //   User's Command: ${command}
+    //   Relevant Windows are as follows:
+    //     ${ans}
+    //   ONLY return the recommended layout for the windows in the format as follows:
+    //   {
+    //     "layout": ["layout for task1", "layout for task2", ...]
+    //       {
+    //         "task": "task1",
+    //         "windows": [
+    //           {
+    //             "appName": "app1",
+    //             "windowTitle": "window1",
+    //             "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
+    //             "description": "description1" // e.g. writing, reading, browsing, coding, etc.
+    //           },
+    //           {
+    //             "appName": "app1",
+    //             "windowTitle": "window1",
+    //             "windowManagement": "management method2",
+    //             "description": "description2"
+    //           }
+    //         ]
+    //       },
+    //       {
+    //         "task": "task2",
+    //         "windows": [
+    //           {
+    //             "appName": "app3",
+    //             "windowTitle": "window3",
+    //             "windowManagement": "management method3",
+    //             "description": "description3"
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    //   DO NOT RETURN ANYTHING ELSE.
+    //   `);
     const endTime = Date.now();
-    console.log(answer);
+    // console.log(answer);
+
+    console.log(desc, layout);
 
     // Calculate and log the runtime
     const runtime = endTime - startTime;
