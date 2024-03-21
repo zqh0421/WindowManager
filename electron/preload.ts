@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electron', {
   },
   getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
   getAllWindows: () => ipcRenderer.invoke('get-all-windows'),
+  getAllWindowsName: () => ipcRenderer.invoke('get-all-windows-name'),
   getAllWindowsDetail: () => ipcRenderer.invoke('get-all-windows-detail'),
   recordAppActivity: () => ipcRenderer.invoke('record-app-activity'),
   openExternal: (url: string) => ipcRenderer.send('open-external', url)

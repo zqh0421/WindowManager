@@ -20,6 +20,7 @@
     "child_process": "^1.0.2",
     "electron": "^28.2.7",
     "langchain": "^0.1.17",
+    "openai": "^4.29.2",
     "os": "^0.1.2",
     "path": "^0.12.7",
     "postcss": "^8.4.35",

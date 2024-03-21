@@ -1,5 +1,10 @@
 import { ipcMain, shell, BrowserWindow } from 'electron';
-import { recordAppActivity, getAllWindows, getAllWindowsDetail } from './osScripts';
+import {
+  recordAppActivity,
+  getAllWindows,
+  getAllWindowsDetail,
+  getAllWindowsName
+} from './osScripts';
 import {
   executePlatformSpecificCommand,
   parseTitlesFromStdout,
@@ -30,6 +35,11 @@ const registerHandlers = (win: BrowserWindow | null) => {
   // 事件监听 - 获取所有窗口标题
   ipcMain.handle('get-all-windows', async () => {
     return await executePlatformSpecificCommand(getAllWindows, parseTitlesFromStdout);
+  });
+
+  // 事件监听 - 获取所有窗口名称
+  ipcMain.handle('get-all-windows-name', async () => {
+    return await executePlatformSpecificCommand(getAllWindowsName, parseWindowsInfoFromStdout);
   });
 
   // 事件监听 - 获取所有窗口详细信息

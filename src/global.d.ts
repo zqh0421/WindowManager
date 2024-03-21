@@ -10,6 +10,7 @@ declare global {
       // 根据需要在这里添加其他方法的声明
       getOpenWindows: () => Promise<Array<IWindow>>;
       getAllWindows: () => Promise<Array<any>>;
+      getAllWindowsName: () => Promise<Array<any>>;
       getAllWindowsDetail: () => Promise<Array<any>>;
       recordAppActivity: () => Promise<Array<any>>;
     };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '/electron-vite.animate.svg';
-import { getAnswer } from '@/api/chat';
+import { getAnswer, getAnswerAssistant } from '@/api/chat';
 
 export interface IWindow {
   id: string;
@@ -13,6 +13,7 @@ export interface IWindow {
 
 const Test = () => {
   const [windows, setWindows] = useState<Array<IWindow>>([]);
+  const [command, setCommand] = useState<string>('');
 
   useEffect(() => {
     console.log(windows);
@@ -20,6 +21,11 @@ const Test = () => {
 
   const handleTestLangchainAPI = async () => {
     const answer = await getAnswer('Hello, nice to see you!');
+    console.log(answer);
+  };
+
+  const handleTestOpenAiAPI = async () => {
+    const answer = await getAnswerAssistant('Hello, nice to see you!');
     console.log(answer);
   };
 
@@ -54,6 +60,124 @@ const Test = () => {
     window.electron.send('open-external', 'https://google.com');
   };
 
+  const getRecommendedLayout = async () => {
+    const startTime = Date.now();
+    // 1st: get (Available app list) & (Currently Open Window List)
+    // 2nd: Interact with LangChain to get the recommended layout
+    const allWindows = await window.electron.getAllWindowsName();
+    const answer = await getAnswer(`
+      You are a window management assistant.
+      Please group the currently open windows according to their relevance for operating specific tasks.
+      For each task, plan the layout of each window. If not relevant, please leave a single window alone.
+      For example:
+      Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang, -438, 1512864 and wpsoffice, WPS Office, 038, 1512868 together, for writing a paper draft.
+      Currently open windows are as follows: 
+      title:
+      appName, windowTitle
+      items:
+      ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+      ONLY return the recommended layout for the windows in the format as follows:
+      {
+        "layout": [
+          {
+            "task": "task1",
+            "windows": [
+              {
+                "appName": "app1",
+                "windowTitle": "window1",
+                "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
+                "description": "description1" // e.g. writing, reading, browsing, coding, etc.
+              },
+              {
+                "appName": "app1",
+                "windowTitle": "window1",
+                "windowManagement": "management method2",
+              }
+            ]
+          },
+          {
+            "task": "task2",
+            "windows": [
+              {
+                "appName": "app3",
+                "windowTitle": "window3",
+                "windowManagement": "management method3",
+              }
+            ]
+          }
+        ]
+      }
+      DO NOT RETURN ANYTHING ELSE.
+      `);
+    const endTime = Date.now();
+    console.log(answer);
+
+    // Calculate and log the runtime
+    const runtime = endTime - startTime;
+    console.log(`Runtime: ${runtime / 1000} seconds`);
+  };
+
+  const getLayoutBasedOnCommand = async () => {
+    const startTime = Date.now();
+    const allWindows = await window.electron.getAllWindowsDetail();
+    const answer = await getAnswer(`
+      You are a window management assistant.
+      Please group the currently open windows according to their relevance for operating specific tasks.
+      For each task, plan the layout of each window. If not relevant, please leave a single window alone.
+      Please plan the possible layout ONLY based on user's command and RELEVANT currently open windows.
+      For example:
+      Group Safari, Tabs.do：以任务为中心的浏览器选项卡管理-Joseph Chee Chang, -438, 1512864 and wpsoffice, WPS Office, 038, 1512868 together, for writing a paper draft.
+      User's Command: ${command}
+      Currently open windows are as follows: 
+      title:
+      appName, windowTitle, windowPosition, windowSize
+      items:
+      ${allWindows
+        .map(
+          (window) => `${window.processName}, ${window.title}, ${window.position}, ${window.size}`
+        )
+        .join('\n')}
+      ONLY return the recommended layout for the windows in the format as follows:
+      {
+        "layout": [
+          {
+            "task": "task1",
+            "windows": [
+              {
+                "appName": "app1",
+                "windowTitle": "window1",
+                "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
+                "description": "description1" // e.g. writing, reading, browsing, coding, etc.
+              },
+              {
+                "appName": "app1",
+                "windowTitle": "window1",
+                "windowManagement": "management method2",
+              }
+            ]
+          },
+          {
+            "task": "task2",
+            "windows": [
+              {
+                "appName": "app3",
+                "windowTitle": "window3",
+                "windowManagement": "management method3",
+              }
+            ]
+          }
+        ]
+      }
+      DO NOT RETURN ANYTHING ELSE.
+      `);
+    const endTime = Date.now();
+    console.log(answer);
+
+    // Calculate and log the runtime
+    const runtime = endTime - startTime;
+    console.log(`Runtime: ${runtime / 1000} seconds`);
+  };
+
   return (
     <React.Fragment>
       <Link to={'/'}>Back to Home</Link>
@@ -66,6 +190,7 @@ const Test = () => {
       </div>
       <div className='mt-1 w-full flex-wrap flex justify-center'></div>
       <button onClick={handleTestLangchainAPI}>Click to Test Langchain API</button>
+      <button onClick={handleTestOpenAiAPI}>Click to Test OpenAI API</button>
       <button onClick={handleOpenDevTools}>Open Dev Tools</button>
       <button onClick={getOpenWindows}>Get Open Windows</button>
       <ul>
@@ -85,7 +210,10 @@ const Test = () => {
       </ul>
       <button onClick={getAllWindows}>Get All Windows</button>
       <button onClick={getAllWindowsDetail}>Get All Windows Details</button>
-      <button onClick={openWebPage}>打开外部网页</button>
+      <button onClick={openWebPage}>Open External Webpage (Google)</button>
+      <button onClick={getRecommendedLayout}>Get Recommended Layout</button>
+      <button onClick={getLayoutBasedOnCommand}>Get Layout Based On Command</button>
+      <input type='text' value={command} onChange={(e) => setCommand(e.target.value)} />
     </React.Fragment>
   );
 };

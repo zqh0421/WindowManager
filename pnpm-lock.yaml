@@ -32,6 +32,9 @@ dependencies:
   langchain:
     specifier: ^0.1.17
     version: 0.1.28(better-sqlite3@9.4.3)
+  openai:
+    specifier: ^4.29.2
+    version: 4.29.2
   os: {specifier: ^0.1.2, version: 0.1.2}
   path:
     specifier: ^0.12.7

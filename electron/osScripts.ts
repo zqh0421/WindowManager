@@ -10,6 +10,30 @@ export const getAllWindows = {
   appleScript: `osascript -e 'tell application "System Events" to get the title of every window of every process'`
 };
 
+export const getAllWindowsName = {
+  appleScript: `
+    osascript -e 'tell application "System Events"
+    set processList to every process
+    set output to ""
+    repeat with aProcess in processList
+        set theProcessName to name of aProcess
+        try
+            set theWindows to every window of aProcess
+            if theWindows is not {} then
+                repeat with aWindow in theWindows
+                  set theTitle to title of aWindow
+                  set output to output & theProcessName & ", " & theTitle & "\n"
+                end repeat
+            end if
+        on error errMsg
+            -- 错误处理，比如记录无窗口的进程或跳过
+        end try
+    end repeat
+    output
+    end tell'
+  `
+};
+
 export const getAllWindowsDetail = {
   appleScript: `
     osascript -e 'tell application "System Events"

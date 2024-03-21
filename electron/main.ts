@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, globalShortcut } from 'electron';
 import path from 'node:path';
 import { recordWindowUsage } from './recorder';
 import { registerHandlers } from './handlers';
@@ -26,6 +26,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    frame: false, // 隐藏默认的窗口标题栏
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true // 保持启用状态
@@ -70,10 +71,34 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
-app.whenReady().then(dbOperations.createTables);
+app
+  .whenReady()
+  .then(() => {
+    dbOperations.createTables();
+  })
+  .then(() => {
+    // 每隔60秒执行一次检测
+    setInterval(recordWindowUsage, 60 * 1000);
+  });
 
-// 每隔60秒执行一次检测
-setInterval(recordWindowUsage, 60 * 1000);
+app.whenReady().then(() => {
+  // 设置全局快捷键
+  globalShortcut.register('Option+Space', () => {
+    console.log('Option+Space is pressed');
+    // 检查主窗口是否存在，如果不存在则创建
+    if (!win) {
+      createWindow();
+    } else {
+      // 如果窗口已经在前台显示，则隐藏窗口
+      if (win.isVisible()) {
+        win.hide();
+      } else {
+        // 如果窗口不在前台显示，则将其显示到前台
+        win.show();
+      }
+    }
+  });
+});
 
 app.on('before-quit', () => {
   // 确保在应用退出前完成最后一次活动窗口的记录
