@@ -7,6 +7,7 @@ declare global {
   interface Window {
     electron: {
       send: (channel: string, data?: any) => void;
+      invoke: (channel: string, data?: any) => Promise<any>;
       receive: (channel: string, listener: (...args: any[]) => void) => void;
       // 根据需要在这里添加其他方法的声明
       getOpenWindows: () => Promise<Array<IWindow>>;

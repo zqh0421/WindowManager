@@ -20,7 +20,6 @@ export async function recordWindowUsage() {
       // 注意：这里假设parseWindowsInfoFromStdout已经调整为适合你的输出格式
       // const output = parseWindowsInfoFromStdout(stdout); // 或直接处理stdout
       const output = stdout.trim().split(', ');
-
       currentProcessName = output[0] || 'Unknown';
       currentWindowTitle = output[1] || 'Unknown';
       currentWindowSize = `${output[2] || '0'},${output[3] || '0'}`;

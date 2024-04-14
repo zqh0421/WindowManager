@@ -19,6 +19,17 @@ contextBridge.exposeInMainWorld('electron', {
   receive: (channel: string, listener: (...args: any[]) => void) => {
     ipcRenderer.on(channel, listener);
   },
+  invoke: (operation: any, args = []) =>
+    new Promise((resolve, reject) => {
+      ipcRenderer.send('db-query', { operation, args });
+      ipcRenderer.once(`${operation}-response`, (_, { success, data, error }) => {
+        if (success) {
+          resolve(data);
+        } else {
+          reject(new Error(error));
+        }
+      });
+    }),
   getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
   getAllWindows: () => ipcRenderer.invoke('get-all-windows'),
   getAllWindowsName: () => ipcRenderer.invoke('get-all-windows-name'),

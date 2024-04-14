@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ipcMain, shell, BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import {
   recordAppActivity,
@@ -10,6 +12,7 @@ import {
   parseTitlesFromStdout,
   parseWindowsInfoFromStdout
 } from './utils';
+import { models } from '../sqlite/index';
 
 const registerHandlers = (win: BrowserWindow | null) => {
   // 事件监听 - 打开开发者工具
@@ -23,10 +26,25 @@ const registerHandlers = (win: BrowserWindow | null) => {
     await shell.openExternal(url);
   });
 
+  // 事件监听 - 调整窗口大小
   ipcMain.on('adjust-window-size', (event: IpcMainInvokeEvent, data: { height: number }) => {
     const currentWindow = BrowserWindow.fromWebContents(event.sender);
     if (currentWindow) {
       currentWindow.setSize(currentWindow.getSize()[0], data.height, true);
+    }
+  });
+
+  // 事件监听 - 执行 SQL 查询
+  ipcMain.on('db-query', async (event, { operation, args }) => {
+    try {
+      if (typeof (models as any)[operation] === 'function') {
+        const result = await (models as any)[operation](...args);
+        event.reply(`${operation}-response`, { success: true, data: result });
+      } else {
+        throw new Error(`No such operation: ${operation}`);
+      }
+    } catch (error) {
+      event.reply(`${operation}-response`, { success: false, error: error });
     }
   });
 

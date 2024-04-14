@@ -4,7 +4,6 @@ import logo from '/electron-vite.animate.svg';
 import { getAnswer, getAnswerAssistant } from '@/api/chat';
 
 export interface IWindow {
-  id: string;
   title: string;
   position: string;
   processName: string;
@@ -49,7 +48,18 @@ const Test = () => {
   const getAllWindowsDetail = async () => {
     try {
       const allWindows = await window.electron.getAllWindowsDetail();
-      setWindows(allWindows);
+      const temp = allWindows.filter(
+        (value, index, self) =>
+          index ===
+          self.findIndex(
+            (t) =>
+              t.position === value.position &&
+              t.size === value.size &&
+              t.title === value.title &&
+              t.processName === value.processName
+          )
+      );
+      setWindows(temp);
     } catch (error) {
       console.error('Failed to fetch windows:', error);
     }
@@ -120,7 +130,6 @@ const Test = () => {
       {
         "windows": [
           {
-            "windowId": "A specific id to distinguish the window",
             "appName": "app1",
             "windowTitle": "window1",
           },
@@ -160,7 +169,6 @@ const Test = () => {
               "task": "task1",
               "windows": [
                 {
-                  "windowId": "As is given in the previous step",
                   "windowManagement": "management method1", // e.g. left half, right half, top half, bottom half, whole screen
                 },
                 {

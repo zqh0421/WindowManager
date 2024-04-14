@@ -16,18 +16,21 @@ export const getAllWindowsName = {
     set processList to every process
     set output to ""
     repeat with aProcess in processList
-        set theProcessName to name of aProcess
-        try
-            set theWindows to every window of aProcess
-            if theWindows is not {} then
-                repeat with aWindow in theWindows
-                  set theTitle to title of aWindow
-                  set output to output & theProcessName & ", " & theTitle & "\n"
-                end repeat
-            end if
-        on error errMsg
-            -- 错误处理，比如记录无窗口的进程或跳过
-        end try
+      set aProcessName to name of aProcess
+      try
+          set windowList to every window of aProcess
+          if windowList is not {} then
+              repeat with aWindow in windowList
+                set aWindowTitle to title of aWindow
+                set theSize to size of aWindow
+                set windowInfo to (theProcessName & ", " & theTitle & ", " & {"Position: ", thePosition, "Size: ", theSize} as string)
+                log windowInfo -- 打印诊断信息
+                set output to output & windowInfo & "\n"
+              end repeat
+          end if
+      on error errMsg
+          -- 错误处理，比如记录无窗口的进程或跳过
+      end try
     end repeat
     output
     end tell'
@@ -36,33 +39,39 @@ export const getAllWindowsName = {
 
 export const getAllWindowsDetail = {
   appleScript: `
-    osascript -e 'tell application "System Events"
-    set processList to every process
-    set output to ""
-    repeat with aProcess in processList
-        set theProcessName to name of aProcess
+  osascript -e 'tell application "System Events"
+  set processList to every process
+  set output to ""
+  repeat with aProcess in processList
+    set aProcessName to name of aProcess
+    try
+      set windowList to every window of aProcess
+      if windowList is not {} then
         try
-            set theWindows to every window of aProcess
-            if theWindows is not {} then
-                repeat with aWindow in theWindows
-                  set theTitle to title of aWindow
-                  set thePosition to position of aWindow
-                  set theSize to size of aWindow
-                  set output to output & theProcessName & ", " & theTitle & ", " & thePosition & ", " & theSize & "\n"
-                end repeat
-            end if
-        on error errMsg
+          -- set windowId to 1 -- 初始化窗口编号
+          repeat with aWindow in windowList
+            set aWindowTitle to title of aWindow
+            set aWindowPosition to position of aWindow
+            set aWindowSize to size of aWindow
+            set output to output & aProcessName & ", " & aWindowTitle & ", " & aWindowPosition & ", " & aWindowSize & "\n"
+            -- set windowId to windowId + 1 -- 更新窗口编号
+          end repeat
+          on error errMsg
             -- 错误处理，比如记录无窗口的进程或跳过
         end try
-    end repeat
-    output
-    end tell'
+      end if
+    on error errMsg
+      -- 错误处理，比如记录无窗口的进程或跳过
+    end try
+  end repeat
+  output
+  end tell'
   `
 };
 
 export const recordAppActivity = {
   appleScript: `
-    osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' -e 'tell application "System Events" to get name of every window of first application process whose frontmost is true'
+    osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true'
   `
 };
 
