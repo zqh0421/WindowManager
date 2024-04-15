@@ -136,8 +136,8 @@ app
     dbOperations.createTables();
   })
   .then(() => {
-    // 每隔5秒执行一次检测
-    setInterval(recordWindowUsage, 5 * 1000);
+    // 每隔60秒执行一次检测
+    setInterval(recordWindowUsage, 60 * 1000);
   })
   .catch((error) => console.error('Error initializing database or timer:', error));
 

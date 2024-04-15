@@ -19,23 +19,38 @@ contextBridge.exposeInMainWorld('electron', {
   receive: (channel: string, listener: (...args: any[]) => void) => {
     ipcRenderer.on(channel, listener);
   },
-  invoke: (operation: any, args = []) =>
-    new Promise((resolve, reject) => {
-      ipcRenderer.send('db-query', { operation, args });
-      ipcRenderer.once(`${operation}-response`, (_, { success, data, error }) => {
-        if (success) {
-          resolve(data);
-        } else {
-          reject(new Error(error));
-        }
-      });
-    }),
   getOpenWindows: () => ipcRenderer.invoke('get-open-windows'),
   getAllWindows: () => ipcRenderer.invoke('get-all-windows'),
   getAllWindowsName: () => ipcRenderer.invoke('get-all-windows-name'),
   getAllWindowsDetail: () => ipcRenderer.invoke('get-all-windows-detail'),
   recordAppActivity: () => ipcRenderer.invoke('record-app-activity'),
-  openExternal: (url: string) => ipcRenderer.send('open-external', url)
+  openExternal: (url: string) => ipcRenderer.send('open-external', url),
+  dbQuery: (operation: string, args: any[] = []) => {
+    // 定义允许的频道列表
+    const validOperations = [
+      'getAllTasks',
+      'addTask',
+      'deleteTask',
+      'addCommand',
+      'addAppActivity',
+      'getLastAppActivity',
+      'updateActiveTime'
+    ];
+    // 检查频道名是否在列表中
+    if (validOperations.includes(operation)) {
+      return new Promise((resolve, reject) => {
+        ipcRenderer.send('db-query', { operation, args });
+        ipcRenderer.once(`${operation}-response`, (_, { success, data, error }) => {
+          if (success) {
+            resolve(data);
+          } else {
+            reject(new Error(error));
+          }
+        });
+      });
+    }
+  }
+
   // 可以在此处添加更多方法，例如接收主进程消息的方法
 });
 

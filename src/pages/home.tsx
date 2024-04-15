@@ -2,31 +2,25 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getLayoutBasedOnCommand } from '@/api/layout';
 import Loading from '@/components/loading';
+import type { Layout } from '@/api/chat';
 
 interface Task {
-  TaskName: string;
-  TaskType: string;
+  taskName: string;
+  taskType: string;
 }
-
-// interface Layout {
-//   taskName: string;
-//   layouts: {
-//     appName: string;
-//     windowTitle: string;
-//     windowManagement: string;
-//     description: string;
-//   }[];
-// }
 
 const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [loadingStage, setLoadingStage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [layouts, setLayouts] = useState<object | null>([]);
+  const [layouts, setLayouts] = useState<Layout[]>([]);
+  const [isLayoutsVisible, setIsLayoutsVisible] = useState(false);
+  const [currentCommand, setCurrentCommand] = useState('');
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     window.electron
-      .invoke('getAllTasks')
+      .dbQuery('getAllTasks')
       .then((tasks) => {
         setTasks(tasks);
         console.log(tasks);
@@ -39,18 +33,25 @@ const Home = () => {
   }, [tasks.length]);
 
   useEffect(() => {
-    console.log(layouts);
-  }, [layouts]);
+    console.log('tobeUsed' + layouts);
+    if (layouts.length > 0) {
+      console.log(layouts);
+      setIsLayoutsVisible(true);
+    }
+  }, [layouts.length]);
 
   const onTaskClick = async (task: Task) => {
     console.log(task);
     setIsLoading(true);
-    const res = await getLayoutBasedOnCommand(task.TaskName, setLoadingStage);
-    if (res) {
-      // res JSON.parse(res);
-    }
-    setLayouts(res || null);
+    const layouts = await getLayoutBasedOnCommand(task.taskName, setLoadingStage);
+    setCurrentCommand(task.taskName);
+    setLayouts(layouts || []);
     setIsLoading(false);
+  };
+
+  const clearLayouts = () => {
+    setLayouts([]);
+    setIsLayoutsVisible(false);
   };
 
   const executeCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -59,9 +60,6 @@ const Home = () => {
       console.log(e.currentTarget.value);
       setIsLoading(true);
       const res = await getLayoutBasedOnCommand(e.currentTarget.value, setLoadingStage);
-      // if (res) {
-      //   // res JSON.parse(res);
-      // }
       setLayouts(res || null);
       setIsLoading(false);
     }
@@ -78,6 +76,7 @@ const Home = () => {
   // }, [listHeight]);
 
   const navigate = useNavigate();
+
   return (
     <div className='flex flex-col bg-white text-gray-800 rounded-lg shadow-lg w-screen overflow-auto'>
       {/* input bar */}
@@ -107,14 +106,81 @@ const Home = () => {
             >
               <div className='flex items-center'>
                 <span className='block w-3 h-3 bg-blue-500 rounded-full mr-2'></span>
-                <span>{item.TaskName}</span>
+                <span>{item.taskName}</span>
               </div>
-              <div className='text-sm text-gray-400'>{item.TaskType}</div>
+              <div className='text-sm text-gray-400'>{item.taskType}</div>
             </li>
           ))}
         </ul>
       </div>
       {/* bottom bar */}
+      {isLayoutsVisible && (
+        <div className='bg-zinc-200 text-center w-[100vw] absolute top-14 left-[0vw] max-h-[calc(100vh-3.5rem)] overflow-y-scroll'>
+          <div>Recommended Layouts {currentCommand ? 'for ' + currentCommand : ''}</div>
+          <div
+            className='sticky top-[40%] left-3 w-6 h-6 bg-black rounded-2xl'
+            onClick={() => setIndex(index + 1)}
+          >
+            -Re-Organize
+          </div>
+          <div className='bg-zinc-400 flex flex-col items-center w-[full]'>
+            {layouts.map(({ windows, task, layoutType }) => {
+              return (
+                <div className='mb-4'>
+                  <div>{task}</div>
+                  {/* TODO: organize layout */}
+                  <div className='bg-black w-[50vw] h-[40vh] relative'>
+                    {
+                      layoutType === 'Full Screen' ? (
+                        <div className='top-0 left-0 w-full h-full absolute bg-white  text-center flex justify-center items-center border-blue-500 border-4'>
+                          <div>{windows[index % 1].description}</div>
+                        </div>
+                      ) : layoutType === 'Left Half + Right Half' ? (
+                        <div>
+                          <div className='top-0 left-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[index % 2].description}</div>
+                          </div>
+                          <div className='top-0 right-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[(index + 1) % 2].description}</div>
+                          </div>
+                        </div>
+                      ) : layoutType === 'Top Half + Bottom Half' ? (
+                        <div>
+                          <div className='top-0 left-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[index % 2].description}</div>
+                          </div>
+                          <div className='left-0 bottom-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[(index + 1) % 2].description}</div>
+                          </div>
+                        </div>
+                      ) : layoutType === 'First Fourth + Last Three Fourth' ? (
+                        <div>
+                          <div className='top-0 left-0 w-1/4 h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[index % 2].description}</div>
+                          </div>
+                          <div className='right-0 top-0 w-3/4 h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[(index + 1) % 2].description}</div>
+                          </div>
+                        </div>
+                      ) : layoutType === 'First Three Fourths + Last Fourth' ? (
+                        <div>
+                          <div className='top-0 left-0 w-3/4 h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[index % 2].description}</div>
+                          </div>
+                          <div className='right-0 top-0 w-1/4 h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                            <div>{windows[(index + 1) % 2].description}</div>
+                          </div>
+                        </div>
+                      ) : null // TODO: add more layout types
+                    }
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div onClick={clearLayouts}>x</div>
+        </div>
+      )}
       <div className='bg-gray-200 p-2 flex justify-between items-center'>
         <span className='text-sm text-gray-600'>Shortcuts</span>
         <button onClick={() => navigate('/test')}>Go to Test</button>

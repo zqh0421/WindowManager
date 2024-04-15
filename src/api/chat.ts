@@ -48,51 +48,64 @@ export async function getAnswerAssistant(message: string) {
   }
 }
 
+export const layoutWindowSchema = z
+  .object({
+    appName: z.string().describe('The name of the application.'),
+    windowTitle: z.string().describe('The title of the window.'),
+    description: z.string()
+  })
+  .describe(
+    'A window that should be displayed in a whole screen or part of the screen for a specific task. ONLY <left half + right half>, <top half + bottom half>, <first fourth + last three fourths>, <first three fourths + last fourths>, or <full screen> are supported, since windows in the same layout SHOULD NOT overlap.'
+  );
+// .describe(
+//   'NO MORE THAN TWO windows that should be displayed together in a whole screen for a specific task.'
+// )
+
+export const layoutSchema = z
+  .object({
+    windows: z.array(layoutWindowSchema),
+    task: z.string().describe('The name of the task'),
+    layoutType: z
+      .enum([
+        'Full Screen',
+        'Left Half + Right Half',
+        'Top Half + Bottom Half',
+        'First Fourth + Last Three Fourth',
+        'First Three Fourths + Last Fourth'
+      ])
+      .describe('Where the window should be displayed on the screen.')
+  })
+  .describe('One type of layout for a specific task');
+
+export const layoutsSchema = z
+  .object({
+    layouts: z.array(layoutSchema).describe('The recommended layouts for the user.'),
+    status: z.enum(['success', 'error']).describe('The status of the layout planning process')
+  })
+  .describe("A list of data showing the recommended layouts for the user's task.");
+
+export type LayoutWindow = {
+  appName: string;
+  windowTitle: string;
+  description: string;
+};
+
+export type Layout = {
+  task: string;
+  layoutType: string;
+  windows: LayoutWindow[];
+};
+
+export type LayoutBasedOnCommandResponse = {
+  layouts: Layout[];
+  status: 'success' | 'error';
+} | null;
+
 export async function answerLayoutBasedOnCommand(
   message: string,
   model: string = 'gpt-4-0125-preview'
-) {
+): Promise<Layout[]> {
   const parser = new JsonOutputFunctionsParser({ diff: true });
-  const layoutSchema = z
-    .object({
-      task: z.string().describe('The name of the task'),
-      layout: z
-        .array(
-          z
-            .object({
-              appName: z.string().describe('The name of the application.'),
-              windowTitle: z.string().describe('The title of the window.'),
-              windowManagement: z
-                .enum([
-                  'full screen',
-                  'left half',
-                  'right half',
-                  'top half',
-                  'bottom half',
-                  'first fourth',
-                  'last fourth',
-                  'first three fourths',
-                  'last three fourths'
-                ])
-                .describe('Where the window should be displayed on the screen.'),
-              description: z.string()
-            })
-            .describe(
-              'A window that should be displayed in a whole screen or part of the screen for a specific task. ONLY <left half + right half>, <top half + bottom half>, <first fourth + last three fourths>, <first three fourths + last fourths>, or <full screen> are supported, since windows in the same layout SHOULD NOT overlap.'
-            )
-        )
-        .describe(
-          'NO MORE THAN TWO windows that should be displayed together in a whole screen for a specific task.'
-        )
-    })
-    .describe('One type of layout for a specific task');
-
-  const layoutsSchema = z.object({
-    layouts: z
-      .array(layoutSchema)
-      .describe("A list of data showing the recommended layouts for the user's task."),
-    status: z.enum(['success', 'error']).describe('The status of the layout planning process')
-  });
 
   const modelParams = {
     functions: [
@@ -173,5 +186,5 @@ export async function answerLayoutBasedOnCommand(
 
   const result = await runnable.invoke(message);
 
-  return result;
+  return (result as LayoutBasedOnCommandResponse)?.layouts as Layout[];
 }

@@ -7,7 +7,7 @@ declare global {
   interface Window {
     electron: {
       send: (channel: string, data?: any) => void;
-      invoke: (channel: string, data?: any) => Promise<any>;
+      dbQuery: (operation: string, data?: any) => Promise<any>;
       receive: (channel: string, listener: (...args: any[]) => void) => void;
       // 根据需要在这里添加其他方法的声明
       getOpenWindows: () => Promise<Array<IWindow>>;
@@ -15,6 +15,27 @@ declare global {
       getAllWindowsName: () => Promise<Array<any>>;
       getAllWindowsDetail: () => Promise<Array<any>>;
       recordAppActivity: () => Promise<Array<any>>;
+    };
+    dbQuery: {
+      addAppActivity: (
+        appName: string,
+        windowTitle: string,
+        windowSize: string,
+        windowPosition: string
+      ) => Promise<any>;
+      getLastAppActivity: () => Promise<any>;
+      updateActiveTime: (id: number) => Promise<any>;
+      addTask: (
+        taskName: string,
+        taskType: string,
+        taskStatus: string,
+        taskPriority: number,
+        taskDeadline?: string,
+        taskDescription?: string
+      ) => Promise<any>;
+      getAllTasks: () => Promise<any>;
+      deleteTask: (id: number) => Promise<any>;
+      addCommand: (command: string, layouts: Layout[]) => Promise<any>;
     };
   }
 }

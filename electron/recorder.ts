@@ -3,6 +3,15 @@ import { getWindowsFrontmost } from './osScripts';
 import { executePlatformSpecificCommand } from './utils';
 import { models } from '../sqlite/index';
 
+interface AppActivity {
+  id: number;
+  appName: string;
+  windowTitle: string;
+  windowSize: string; // Assuming the size is stored as a string like "width,height"
+  windowPosition: string; // Assuming the position is stored as a string like "x,y"
+  latestTime: string;
+}
+
 export async function recordWindowUsage() {
   let currentProcessName = '';
   let currentWindowTitle = '';
@@ -29,10 +38,27 @@ export async function recordWindowUsage() {
     });
   }
   // 将数据插入数据库的逻辑...
-  models.addAppActivity(
-    currentProcessName,
-    currentWindowTitle,
-    currentWindowSize,
-    currentWindowPosition
-  );
+  const lastEntry: AppActivity | null = (await models.getLastAppActivity()) as AppActivity;
+  const timeDiff = (Date.now() - Number.parseInt(lastEntry.latestTime)) / (1000 * 60); // Difference in minutes
+
+  if (
+    lastEntry &&
+    lastEntry.appName === currentProcessName &&
+    lastEntry.windowTitle === currentWindowTitle &&
+    lastEntry.windowSize === currentWindowSize &&
+    lastEntry.windowPosition === currentWindowPosition &&
+    timeDiff < 5
+  ) {
+    // Update active time if current window details match the last recorded details
+    models.updateActiveTime(lastEntry.id);
+    console.log(`Updated: ${lastEntry.id}`);
+  } else {
+    // Insert new record if details have changed
+    models.addAppActivity(
+      currentProcessName,
+      currentWindowTitle,
+      currentWindowSize,
+      currentWindowPosition // Pass the new variable to the database function
+    );
+  }
 }
