@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getLayoutBasedOnCommand } from '@/api/layout';
 import Loading from '@/components/loading';
-import type { Layout } from '@/api/chat';
+import type { Layout, LayoutWindow } from '@/api/chat';
 
 interface Task {
   taskName: string;
@@ -33,7 +33,7 @@ const Home = () => {
   }, [tasks.length]);
 
   useEffect(() => {
-    console.log('tobeUsed' + layouts);
+    console.log('current layouts:');
     if (layouts.length > 0) {
       console.log(layouts);
       setIsLayoutsVisible(true);
@@ -77,13 +77,21 @@ const Home = () => {
 
   const navigate = useNavigate();
 
+  const configShortcuts = () => {
+    navigate('/config');
+  };
+
+  const executeLayout = (layoutType: string, windows: LayoutWindow[]) => {
+    window.electron.executeLayout(layoutType, windows);
+  };
+
   return (
     <div className='flex flex-col bg-white text-gray-800 rounded-lg shadow-lg w-screen overflow-auto'>
       {/* input bar */}
       <input
         className='w-full h-14 bg-gray-200 p-4 text-gray-800 focus:outline-none border-[1px] border-gray-300'
         type='text'
-        placeholder='Enter your aiming task...'
+        placeholder='Create your aiming task...'
         onKeyUp={(e) => {
           executeCommand(e);
         }}
@@ -124,33 +132,72 @@ const Home = () => {
             -Re-Organize
           </div>
           <div className='bg-zinc-400 flex flex-col items-center w-[full]'>
-            {layouts.map(({ windows, task, layoutType }) => {
+            {layouts.map(({ windows, task, layoutType }, index) => {
               return (
-                <div className='mb-4'>
+                <div
+                  className='mb-4'
+                  key={index}
+                  onClick={() => executeLayout(layoutType, windows)}
+                >
                   <div>{task}</div>
                   {/* TODO: organize layout */}
                   <div className='bg-black w-[50vw] h-[40vh] relative'>
                     {
                       layoutType === 'Full Screen' ? (
-                        <div className='top-0 left-0 w-full h-full absolute bg-white  text-center flex justify-center items-center border-blue-500 border-4'>
+                        <div className='top-0 left-0 w-full h-full absolute bg-white  text-center flex justify-center items-center border-blue-500 border-4 group'>
                           <div>{windows[index % 1].description}</div>
+                          <div
+                            className="window-info z-[99] absolute top-0 left-[calc(100%+2rem)] w-[calc(40%)] h-full bg-white bg-opacity-90 group-hover:flex flex-col hidden justify-center items-center text-center border-4 border-blue-500
+                          before:content-[''] before:absolute before:top-[50%] before:left-[-0.6rem] before:w-0 before:h-0 before:border-t-[0.6rem] before:border-b-[0.6rem] before:border-r-[0.6rem] before:border-t-transparent before:border-b-transparent before:border-r-blue-500"
+                          >
+                            <p>{windows[index % 1].appName}</p>
+                            <p>{windows[index % 1].windowTitle}</p>
+                          </div>
                         </div>
                       ) : layoutType === 'Left Half + Right Half' ? (
                         <div>
-                          <div className='top-0 left-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                          <div className='top-0 left-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4 group'>
                             <div>{windows[index % 2].description}</div>
+                            <div
+                              className="window-info z-[99] absolute top-0 left-[calc(100%+2rem)] w-[calc(80%)] h-full bg-white bg-opacity-90 group-hover:flex flex-col hidden justify-center items-center text-center border-4 border-blue-500
+                          before:content-[''] before:absolute before:top-[50%] before:left-[-0.6rem] before:w-0 before:h-0 before:border-t-[0.6rem] before:border-b-[0.6rem] before:border-r-[0.6rem] before:border-t-transparent before:border-b-transparent before:border-r-blue-500"
+                            >
+                              <p>{windows[index % 2].appName}</p>
+                              <p>{windows[index % 2].windowTitle}</p>
+                            </div>
                           </div>
-                          <div className='top-0 right-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                          <div className='top-0 right-0 w-[50%] h-full absolute bg-white text-center flex justify-center items-center border-blue-500 border-4 group'>
                             <div>{windows[(index + 1) % 2].description}</div>
+                            <div
+                              className="window-info z-[99] absolute top-0 left-[calc(100%+2rem)] w-[calc(80%)] h-full bg-white bg-opacity-90 group-hover:flex flex-col hidden justify-center items-center text-center border-4 border-blue-500
+                          before:content-[''] before:absolute before:top-[50%] before:left-[-0.6rem] before:w-0 before:h-0 before:border-t-[0.6rem] before:border-b-[0.6rem] before:border-r-[0.6rem] before:border-t-transparent before:border-b-transparent before:border-r-blue-500"
+                            >
+                              <p>{windows[(index + 1) % 2].appName}</p>
+                              <p>{windows[(index + 1) % 2].windowTitle}</p>
+                            </div>
                           </div>
                         </div>
                       ) : layoutType === 'Top Half + Bottom Half' ? (
                         <div>
-                          <div className='top-0 left-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                          <div className='top-0 left-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4 group'>
                             <div>{windows[index % 2].description}</div>
+                            <div
+                              className="window-info z-[99] absolute top-0 left-[calc(100%+2rem)] w-[calc(40%)] h-full bg-white bg-opacity-90 group-hover:flex flex-col hidden justify-center items-center text-center border-4 border-blue-500
+                          before:content-[''] before:absolute before:top-[50%] before:left-[-0.6rem] before:w-0 before:h-0 before:border-t-[0.6rem] before:border-b-[0.6rem] before:border-r-[0.6rem] before:border-t-transparent before:border-b-transparent before:border-r-blue-500"
+                            >
+                              <p>{windows[index % 2].appName}</p>
+                              <p>{windows[index % 2].windowTitle}</p>
+                            </div>
                           </div>
-                          <div className='left-0 bottom-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4'>
+                          <div className='left-0 bottom-0 w-full h-1/2 absolute bg-white text-center flex justify-center items-center border-blue-500 border-4 group'>
                             <div>{windows[(index + 1) % 2].description}</div>
+                            <div
+                              className="window-info z-[99] absolute top-0 left-[calc(100%+2rem)] w-[calc(40%)] h-full bg-white bg-opacity-90 group-hover:flex flex-col hidden justify-center items-center text-center border-4 border-blue-500
+                          before:content-[''] before:absolute before:top-[50%] before:left-[-0.6rem] before:w-0 before:h-0 before:border-t-[0.6rem] before:border-b-[0.6rem] before:border-r-[0.6rem] before:border-t-transparent before:border-b-transparent before:border-r-blue-500"
+                            >
+                              <p>{windows[(index + 1) % 2].appName}</p>
+                              <p>{windows[(index + 1) % 2].windowTitle}</p>
+                            </div>
                           </div>
                         </div>
                       ) : layoutType === 'First Fourth + Last Three Fourth' ? (
@@ -182,7 +229,9 @@ const Home = () => {
         </div>
       )}
       <div className='bg-gray-200 p-2 flex justify-between items-center'>
-        <span className='text-sm text-gray-600'>Shortcuts</span>
+        <span className='text-sm text-gray-600'>Opt+Space</span>
+        <button onClick={() => configShortcuts()}>Config Shortcuts</button>{' '}
+        {/* Add a new Table for Shortcuts*/}
         <button onClick={() => navigate('/test')}>Go to Test</button>
         <button className='text-blue-500 hover:text-blue-600'>Settings</button>
       </div>

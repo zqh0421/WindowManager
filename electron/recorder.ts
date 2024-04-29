@@ -39,7 +39,6 @@ export async function recordWindowUsage() {
   }
   // 将数据插入数据库的逻辑...
   const lastEntry: AppActivity | null = (await models.getLastAppActivity()) as AppActivity;
-  const timeDiff = (Date.now() - Number.parseInt(lastEntry.latestTime)) / (1000 * 60); // Difference in minutes
 
   if (
     lastEntry &&
@@ -47,7 +46,7 @@ export async function recordWindowUsage() {
     lastEntry.windowTitle === currentWindowTitle &&
     lastEntry.windowSize === currentWindowSize &&
     lastEntry.windowPosition === currentWindowPosition &&
-    timeDiff < 5
+    (Date.now() - Number.parseInt(lastEntry.latestTime)) / (1000 * 60) < 5 // Difference in minutes < 5
   ) {
     // Update active time if current window details match the last recorded details
     models.updateActiveTime(lastEntry.id);

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IWindow } from '@/pages/test';
+import { LayoutWindow } from './api/chat';
 
 export {}; // 确保这个文件被当作一个模块处理
 
@@ -15,6 +16,7 @@ declare global {
       getAllWindowsName: () => Promise<Array<any>>;
       getAllWindowsDetail: () => Promise<Array<any>>;
       recordAppActivity: () => Promise<Array<any>>;
+      executeLayout: (layoutType: string, windows: LayoutWindow[]) => Promise<Array<any>>;
     };
     dbQuery: {
       addAppActivity: (

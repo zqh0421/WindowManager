@@ -4,9 +4,9 @@ import logo from '/electron-vite.animate.svg';
 import { getAnswer, getAnswerAssistant } from '@/api/chat';
 
 export interface IWindow {
-  title: string;
+  windowTitle: string;
   position: string;
-  processName: string;
+  appName: string;
   size: string;
 }
 
@@ -55,8 +55,8 @@ const Test = () => {
             (t) =>
               t.position === value.position &&
               t.size === value.size &&
-              t.title === value.title &&
-              t.processName === value.processName
+              t.windowTitle === value.windowTitle &&
+              t.appName === value.appName
           )
       );
       setWindows(temp);
@@ -86,7 +86,7 @@ const Test = () => {
         title:
         appName, windowTitle
         items:
-        ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+        ${allWindows.map((window) => `${window.appName}, ${window.windowTitle}`).join('\n')}
       ONLY return the recommended layout for the windows in the format as follows:
         {
           "layout": [
@@ -125,7 +125,7 @@ const Test = () => {
       title:
       appName, windowTitle
       items:
-      ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+      ${allWindows.map((window) => `${window.appName}, ${window.windowTitle}`).join('\n')}
       ONLY return the relevant windows in the format as follows:
       {
         "windows": [
@@ -263,14 +263,14 @@ const Test = () => {
       <button onClick={getOpenWindows}>Get Open Windows</button>
       <ul>
         {windows.map((window, index) => (
-          <li key={index}>{window.title}</li>
+          <li key={index}>{window.windowTitle}</li>
         ))}
       </ul>
       <ul>
         {windows.map((window, index) => (
           <li key={index}>
-            <p>{window.processName}</p>
-            <p>{window.title}</p>
+            <p>{window.appName}</p>
+            <p>{window.windowTitle}</p>
             <p>{window.position}</p>
             <p>{window.size}</p>
           </li>

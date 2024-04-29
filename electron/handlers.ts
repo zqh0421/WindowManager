@@ -10,9 +10,11 @@ import {
 import {
   executePlatformSpecificCommand,
   parseTitlesFromStdout,
-  parseWindowsInfoFromStdout
+  parseWindowsInfoFromStdout,
+  executePlatformSpecificCommandforLayout
 } from './utils';
 import { models } from '../sqlite/index';
+import { LayoutWindow } from '@/api/chat';
 
 const registerHandlers = (win: BrowserWindow | null) => {
   // 事件监听 - 打开开发者工具
@@ -75,6 +77,10 @@ const registerHandlers = (win: BrowserWindow | null) => {
   // 事件监听 - 记录应用活动
   ipcMain.handle('record-app-activity', async () => {
     return await executePlatformSpecificCommand(recordAppActivity, (stdout) => stdout);
+  });
+
+  ipcMain.handle('execute-layout', async (_, layoutType: string, windows: LayoutWindow[]) => {
+    return await executePlatformSpecificCommandforLayout(layoutType, windows, (stdout) => stdout);
   });
 };
 

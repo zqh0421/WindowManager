@@ -9,6 +9,19 @@
 --   taskLimit INTEGER DEFAULT 5,
 -- );
 
+CREATE TABLE IF NOT EXISTS Shortcuts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  combination TEXT NOT NULL,  -- 'Ctrl+Shift+A',
+  globe TEXT NOT NULL,  -- 'Global', 'In App'
+  type TEXT NOT NULL, -- 'Application', 'Website', 'File', 'Opening Window', 'Layout', 'Operation'
+  applicationName TEXT,
+  websiteUrl TEXT,
+  filePath TEXT,
+  windowId INTEGER,
+  operationType TEXT,
+  initialTime DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS AppActivity (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   appName TEXT NOT NULL,

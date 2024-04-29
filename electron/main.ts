@@ -31,12 +31,12 @@ function createWindow() {
 
   win = new BrowserWindow({
     // width: width / 2, // 屏幕宽度的一半
-    width: width / 3,
+    width: width / 2,
     height: height / 2, // 根据内容高度，这里只是一个初始值
-    x: 0,
-    y: 0,
-    // x: width / 4, // 在屏幕中心
-    // y: height * 0.1, // 从屏幕顶部开始
+    // x: 0,
+    // y: 0,
+    x: width / 4, // 在屏幕中心
+    y: height * 0.1, // 从屏幕顶部开始
     resizable: false, // 不允许用户调整窗口尺寸
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     frame: false, // 隐藏默认的窗口标题栏

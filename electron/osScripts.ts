@@ -102,3 +102,36 @@ export const getWindowsFrontmost = {
   end tell
   '`
 };
+
+// export const executeLayout = (layoutType: string, windows: { processName: string; windowTitle: string }[]) =>{
+//   appleScript:
+//     switch (layoutType) {
+//       case "Full Screen":
+//         return `
+//         osascript -e '
+//           tell application "System Events"
+//             ${windows.map(win => `
+//               tell process "${win.processName}"
+//                 set position of window "${win.windowTitle}" to {0, 0}
+//                 set size of window "${win.windowTitle}" to {1920, 1080}
+//               end tell
+//             `).join('\n')}
+//           end tell
+//         '`;
+//       case "Left Half + Right Half":
+//         return `
+//         osascript -e '
+//           tell application "System Events"
+//             ${windows.map((win, index) => `
+//               tell process "${win.processName}"
+//                 set position of window "${win.windowTitle}" to {${index * 960}, 0}
+//                 set size of window "${win.windowTitle}" to {960, 1080}
+//               end tell
+//             `).join('\n')}
+//           end tell
+//         '`;
+//       default:
+//         console.log('Unknown layout type');
+//         return;
+//     }
+// }

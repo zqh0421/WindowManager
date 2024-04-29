@@ -18,8 +18,8 @@ export const getLayoutBasedOnCommand = async (
           (t) =>
             t.position === value.position &&
             t.size === value.size &&
-            t.title === value.title &&
-            t.processName === value.processName
+            t.windowTitle === value.windowTitle &&
+            t.appName === value.appName
         )
     );
     const runTime1 = (Date.now() - startTime) / 1000;
@@ -38,7 +38,7 @@ export const getLayoutBasedOnCommand = async (
       title:
       appName, windowTitle
       items:
-      ${allWindows.map((window) => `${window.processName}, ${window.title}`).join('\n')}
+      ${allWindows.map((window) => `${window.appName}, ${window.windowTitle}`).join('\n')}
       Example Layouts:
         [{
           "Write my research paper": [

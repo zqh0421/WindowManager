@@ -50,7 +50,7 @@ export async function getAnswerAssistant(message: string) {
 
 export const layoutWindowSchema = z
   .object({
-    appName: z.string().describe('The name of the application.'),
+    appName: z.string().describe('The name of the process, as is given in the dataset.'),
     windowTitle: z.string().describe('The title of the window.'),
     description: z.string()
   })

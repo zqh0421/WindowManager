@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('electron', {
   getAllWindowsDetail: () => ipcRenderer.invoke('get-all-windows-detail'),
   recordAppActivity: () => ipcRenderer.invoke('record-app-activity'),
   openExternal: (url: string) => ipcRenderer.send('open-external', url),
+  executeLayout: (layoutType: string, windows: { appName: string; windowName: string }[]) =>
+    ipcRenderer.invoke('execute-layout', layoutType, windows),
   dbQuery: (operation: string, args: any[] = []) => {
     // 定义允许的频道列表
     const validOperations = [

@@ -40,23 +40,22 @@ export async function addCommand(
   try {
     const res1 = await insertCommand.run(command, currentTime, midTime, totalTime);
     const commandId = await res1.lastInsertRowid;
-    for (const { task, layout } of layouts) {
+    for (const { task, windows, layoutType } of layouts) {
       const insertLayout = db.prepare(`
-        INSERT INTO Layout (commandId, description, timestamp)
-        VALUES (?, ?, ?)
+        INSERT INTO Layout (commandId, layoutType, description, timestamp)
+        VALUES (?, ?, ?, ?)
       `);
-      const res2 = await insertLayout.run(commandId, task, currentTime);
+      const res2 = await insertLayout.run(commandId, layoutType, task, currentTime);
       const layoutId = res2.lastInsertRowid;
 
-      for (const layoutWindow of layout) {
+      for (const layoutWindow of windows) {
         const insertLayoutWindow = db.prepare(`
-          INSERT INTO LayoutWindow (appName, windowTitle, windowManagement, layoutId, initialTime, latestTime)
-          VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO LayoutWindow (appName, windowTitle, layoutId, initialTime, latestTime)
+          VALUES (?, ?, ?, ?, ?)
         `);
         await insertLayoutWindow.run(
           layoutWindow.appName,
           layoutWindow.windowTitle,
-          layoutWindow.windowManagement,
           layoutId,
           currentTime,
           currentTime
