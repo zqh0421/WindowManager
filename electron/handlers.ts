@@ -5,7 +5,8 @@ import {
   recordAppActivity,
   getAllWindows,
   getAllWindowsDetail,
-  getAllWindowsName
+  getAllWindowsName,
+  getAllApplications
 } from './osScripts';
 import {
   executePlatformSpecificCommand,
@@ -72,6 +73,10 @@ const registerHandlers = (win: BrowserWindow | null) => {
   // 事件监听 - 获取所有窗口详细信息
   ipcMain.handle('get-all-windows-detail', async () => {
     return await executePlatformSpecificCommand(getAllWindowsDetail, parseWindowsInfoFromStdout);
+  });
+
+  ipcMain.handle('get-all-applications', async () => {
+    return await executePlatformSpecificCommand(getAllApplications, parseWindowsInfoFromStdout);
   });
 
   // 事件监听 - 记录应用活动

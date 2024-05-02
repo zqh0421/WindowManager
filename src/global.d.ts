@@ -15,6 +15,7 @@ declare global {
       getAllWindows: () => Promise<Array<any>>;
       getAllWindowsName: () => Promise<Array<any>>;
       getAllWindowsDetail: () => Promise<Array<any>>;
+      getAllApplications: () => Promise<Array<any>>;
       recordAppActivity: () => Promise<Array<any>>;
       executeLayout: (layoutType: string, windows: LayoutWindow[]) => Promise<Array<any>>;
     };

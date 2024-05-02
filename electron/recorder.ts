@@ -42,6 +42,8 @@ export async function recordWindowUsage() {
 
   if (
     lastEntry &&
+    lastEntry.appName &&
+    lastEntry.windowTitle &&
     lastEntry.appName === currentProcessName &&
     lastEntry.windowTitle === currentWindowTitle &&
     lastEntry.windowSize === currentWindowSize &&

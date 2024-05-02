@@ -5,13 +5,18 @@
   $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
   appId: 'windowmanager',
   asar: true,
-  productName: 'Window Manager',
+  productName: 'AI Window Manager',
   directories: {
     output: 'release/${version}'
   },
   files: ['dist', 'dist-electron'],
   mac: {
-    target: ['dmg'],
+    target: [
+      {
+        "target": "dmg",
+        "arch": ["arm64"]
+      }
+    ],
     artifactName: '${productName}-Mac-${version}-Installer.${ext}'
   },
   win: {
@@ -33,9 +38,4 @@
     target: ['AppImage'],
     artifactName: '${productName}-Linux-${version}.${ext}'
   },
-  build: {
-    extraResources: [
-      './database/database.db'
-    ]
-  }
 }

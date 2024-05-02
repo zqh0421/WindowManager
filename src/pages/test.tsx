@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '/electron-vite.animate.svg';
-import { getAnswer, getAnswerAssistant } from '@/api/chat';
+import { getAnswer } from '@/api/chat';
 
 export interface IWindow {
   windowTitle: string;
@@ -20,11 +20,6 @@ const Test = () => {
 
   const handleTestLangchainAPI = async () => {
     const answer = await getAnswer('Hello, nice to see you!');
-    console.log(answer);
-  };
-
-  const handleTestOpenAiAPI = async () => {
-    const answer = await getAnswerAssistant('Hello, nice to see you!');
     console.log(answer);
   };
 
@@ -258,7 +253,6 @@ const Test = () => {
       </div>
       <div className='mt-1 w-full flex-wrap flex justify-center'></div>
       <button onClick={handleTestLangchainAPI}>Click to Test Langchain API</button>
-      <button onClick={handleTestOpenAiAPI}>Click to Test OpenAI API</button>
       <button onClick={handleOpenDevTools}>Open Dev Tools</button>
       <button onClick={getOpenWindows}>Get Open Windows</button>
       <ul>

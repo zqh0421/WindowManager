@@ -95,12 +95,9 @@ export const executePlatformSpecificCommandforLayout = async (
               .map(
                 (win) => `
               if exists (application process "${win.appName}") then
-              tell application "${win.appName}" to activate
+              tell process "${win.appName}" to activate
               tell process "${win.appName}"
                 set theWindow to the first window whose name is "${win.windowTitle}"
-                if not (exists theWindow) then
-                  set theWindow to the first window whose name contains "${win.windowTitle}"
-                end if
                 if exists theWindow then
                   perform action "AXRaise" of theWindow
                 end if
@@ -159,8 +156,8 @@ export const executePlatformSpecificCommandforLayout = async (
                     (win) => `
                 if exists (application process "${win.appName}") then
                   tell process "${win.appName}"
-                    set position of window "${win.windowTitle}" to ${j++ == 0 ? `{0, 0}` : `{0, ${height / 2}}`}
-                    set size of window "${win.windowTitle}" to {${width}, ${height / 2}}
+                    set position of window "${win.windowTitle}" to ${j++ == 0 ? `{0, 0}` : `{0, ${Math.floor(height / 2)}}`}
+                    set size of window "${win.windowTitle}" to {${width}, 50 + ${Math.floor(height / 2)}}
                   end tell
                 end if
                 `
@@ -215,7 +212,7 @@ export const executePlatformSpecificCommandforLayout = async (
             break;
           }
         }
-        command = `osascript -e '${minimizeOtherWindowsScript} ${activateWindowsScript} ${layoutCommand}'`;
+        command = `osascript -e '${minimizeOtherWindowsScript} ${layoutCommand} ${activateWindowsScript}'`;
         break;
       }
       case 'linux': {

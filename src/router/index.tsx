@@ -3,7 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import Home from '@/pages/home';
 import Test from '@/pages/test';
 import Config from '@/pages/config';
-import NotFound from '@/pages/NotFound';
+import NotFound from '@/pages/notFound';
 
 // 创建router路由实例对象，并配置路由对应关系（路由数组）
 const router = createBrowserRouter([

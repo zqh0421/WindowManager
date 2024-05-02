@@ -13,20 +13,21 @@ export async function addAppActivity(
     INSERT INTO AppActivity (appName, windowTitle, windowSize, windowPosition, initialTime, latestTime)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-
-  try {
-    const result = await insertActivity.run(
-      appName,
-      windowTitle,
-      windowSize,
-      windowPosition,
-      currentTime,
-      currentTime
-    );
-    console.log('Inserted AppActivity with ID:', result.lastInsertRowid);
-    return result.lastInsertRowid; // Return the AppActivity's last inserted ID
-  } catch (error) {
-    console.error(`addAppActivity error: ${error}`);
+  if (appName && windowTitle && windowSize && windowPosition) {
+    try {
+      const result = await insertActivity.run(
+        appName,
+        windowTitle,
+        windowSize,
+        windowPosition,
+        currentTime,
+        currentTime
+      );
+      console.log('Inserted AppActivity with ID:', result.lastInsertRowid);
+      return result.lastInsertRowid; // Return the AppActivity's last inserted ID
+    } catch (error) {
+      console.error(`addAppActivity error: ${error}`);
+    }
   }
 }
 
