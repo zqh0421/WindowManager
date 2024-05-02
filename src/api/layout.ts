@@ -37,6 +37,7 @@ export const getLayoutBasedOnCommand = async (
       Windows in the same layout should not overlap.
       
       Currently open windows are as follows: 
+      User's Command: ${command}
       title:
       appName, windowTitle
       items:

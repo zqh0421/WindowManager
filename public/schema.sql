@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS Task (
   taskDescription TEXT,
   taskType TEXT NOT NULL, -- 'Productivity', 'Entertainment', 'Learning', 'Others'
   taskStatus TEXT NOT NULL, -- 'In Progress', 'Completed', 'Abandoned'
-  taskPriority TEXT NOT NULL, -- 'High', 'Medium', 'Low'
+  taskPriority TEXT NOT NULL, -- 'High', 'Medium', 'Low', 'Common'
   taskDeadline DATETIME,
   lastExecutionTime DATETIME,
   createTime DATETIME DEFAULT CURRENT_TIMESTAMP,
