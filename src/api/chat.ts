@@ -6,6 +6,41 @@ import OpenAI from 'openai';
 
 export const layoutWindowSchema = z
   .object({
+    type: z.enum(['Application', 'Window', 'Website', 'File']),
+    appName: z
+      .string()
+      .describe('The name of the process/application, as is given in the dataset.'),
+    windowTitle: z.string().describe('The title of the window/tab/websiteUrl.').optional(),
+    description: z.string().describe('A simple utility description of the window.')
+  })
+  .describe(
+    'A(n) window/application/tab/website/file that should be displayed in a whole screen or part of the screen for a specific task. ONLY <left half + right half>, <top half + bottom half>, <first fourth + last three fourths>, <first three fourths + last fourths>, or <full screen> are supported, since windows in the same layout SHOULD NOT overlap.'
+  )
+  .refine(
+    (data) => {
+      if (data.type === 'Application') {
+        return data.appName !== '' && data.windowTitle === '';
+      } else if (data.type === 'Window') {
+        return data.windowTitle !== '' && data.appName !== '';
+      } else if (data.type === 'Website') {
+        return data.windowTitle !== '' && data.appName !== '';
+      } else if (data.type === 'File') {
+        return data.windowTitle !== '' && data.appName !== '';
+      }
+    },
+    {
+      message: `
+      Apllication belongs to the available application list and is not the same as Window.
+      Window must have a appName and a windowTitle.
+      Website must specify a browser name (appName) and its url (windowTitle) to open it.
+      The website url can be outside of defined data in the prompt.
+      File must specify an appName to open the file and its file path (windowTitle).
+      `
+    }
+  );
+
+export const layoutWindowWithoutCommandSchema = z
+  .object({
     appName: z.string().describe('The name of the process, as is given in the dataset.'),
     windowTitle: z.string().describe('The title of the window.'),
     description: z.string()
@@ -16,6 +51,22 @@ export const layoutWindowSchema = z
 // .describe(
 //   'NO MORE THAN TWO windows that should be displayed together in a whole screen for a specific task.'
 // )
+
+export const layoutWithoutCommandSchema = z
+  .object({
+    windows: z.array(layoutWindowWithoutCommandSchema),
+    task: z.string().describe('The name of the task'),
+    layoutType: z
+      .enum([
+        'Full Screen',
+        'Left Half + Right Half',
+        'Top Half + Bottom Half',
+        'First Fourth + Last Three Fourth',
+        'First Three Fourths + Last Fourth'
+      ])
+      .describe('Where the window should be displayed on the screen.')
+  })
+  .describe('One type of layout for a specific task');
 
 export const layoutSchema = z
   .object({
@@ -40,10 +91,18 @@ export const layoutsSchema = z
   })
   .describe("A list of data showing the recommended layouts for the user's task.");
 
+export const layoutsWithoutCommandSchema = z
+  .object({
+    layouts: z.array(layoutWithoutCommandSchema).describe('The recommended layouts for the user.'),
+    status: z.enum(['success', 'error']).describe('The status of the layout planning process')
+  })
+  .describe("A list of data showing the recommended layouts for the user's task.");
+
 export type LayoutWindow = {
+  type: 'Application' | 'Window' | 'Tab' | 'Website' | 'File';
   appName: string;
-  windowTitle: string;
-  description: string;
+  windowTitle?: string;
+  description?: string;
 };
 
 export type Layout = {
@@ -75,7 +134,7 @@ export async function answerLayoutWithoutCommand(
         name: 'layoutWithoutCommand',
         description:
           'Generate recommended layouts based on given window information and user habits',
-        parameters: zodToJsonSchema(layoutsSchema)
+        parameters: zodToJsonSchema(layoutsWithoutCommandSchema)
       }
     ],
     function_call: { name: 'layoutWithoutCommand' }

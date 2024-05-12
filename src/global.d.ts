@@ -19,26 +19,5 @@ declare global {
       recordAppActivity: () => Promise<Array<any>>;
       executeLayout: (layoutType: string, windows: LayoutWindow[]) => Promise<Array<any>>;
     };
-    dbQuery: {
-      addAppActivity: (
-        appName: string,
-        windowTitle: string,
-        windowSize: string,
-        windowPosition: string
-      ) => Promise<any>;
-      getLastAppActivity: () => Promise<any>;
-      updateActiveTime: (id: number) => Promise<any>;
-      addTask: (
-        taskName: string,
-        taskType: string,
-        taskStatus: string,
-        taskPriority: number,
-        taskDeadline?: string,
-        taskDescription?: string
-      ) => Promise<any>;
-      getAllTasks: () => Promise<any>;
-      deleteTask: (id: number) => Promise<any>;
-      addCommand: (command: string, layouts: Layout[]) => Promise<any>;
-    };
   }
 }

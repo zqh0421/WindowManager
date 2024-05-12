@@ -2,7 +2,7 @@ import React, { useState, Dispatch, SetStateAction } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import type { Task } from './taskList';
 import type { Layout } from '@/api/chat';
-import { getLayoutBasedOnCommand } from '@/api/layout';
+// import { useApps } from '@/context/appsContext';
 
 interface TaskItemProps {
   task: Task;
@@ -24,6 +24,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
   setEditMode
 }) => {
   const [showActions, setShowActions] = useState(false);
+  console.log(setLoadingStage, setLayouts);
+  // const appsProvider = useApps();
+  // const apps = appsProvider?.apps || [];
 
   const handleSetReminderClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation(); // 阻止事件冒泡
@@ -44,9 +47,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
   const handleTaskExecution = async () => {
     console.log(task);
     setIsLoading(true);
-    const layouts = await getLayoutBasedOnCommand(task.taskName, setLoadingStage);
+    // const layouts = await getLayoutBasedOnCommand(task.taskName, apps, setLoadingStage);
     setCurrentTask(task);
-    setLayouts(layouts || []);
+    // setLayouts(layouts || []);
     setIsLoading(false);
   };
 

@@ -3,6 +3,8 @@ import { Dispatch, SetStateAction } from 'react';
 import { getLayoutBasedOnCommand } from '@/api/layout';
 import type { Layout } from '@/api/chat';
 
+// import { useApps } from '@/context/appsContext';
+
 interface CommandInputBarProps {
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   setLayouts: Dispatch<SetStateAction<Layout[]>>;
@@ -16,6 +18,10 @@ const CommandInputBar: React.FC<CommandInputBarProps> = ({
   setLoadingStage,
   setCurrentCommand
 }) => {
+  // TODO: Get apps from context
+  const apps: string[] = [];
+  // const appsProvider = useApps();
+  // const apps = appsProvider?.apps || [];
   const executeCommand = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       console.log('Enter pressed');
@@ -23,7 +29,7 @@ const CommandInputBar: React.FC<CommandInputBarProps> = ({
       setIsLoading(true);
       setLayouts([]);
       setCurrentCommand(e.currentTarget.value);
-      const res = await getLayoutBasedOnCommand(e.currentTarget.value, setLoadingStage);
+      const res = await getLayoutBasedOnCommand(e.currentTarget.value, apps, setLoadingStage);
       setLayouts(res || null);
       setIsLoading(false);
     }

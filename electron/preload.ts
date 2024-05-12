@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('electron', {
   openExternal: (url: string) => ipcRenderer.send('open-external', url),
   executeLayout: (layoutType: string, windows: { appName: string; windowName: string }[]) =>
     ipcRenderer.invoke('execute-layout', layoutType, windows),
+  getAllApplications: () => ipcRenderer.invoke('get-all-applications'),
   dbQuery: (operation: string, args: any[] = []) => {
     // 定义允许的频道列表
     const validOperations = [
@@ -36,7 +37,13 @@ contextBridge.exposeInMainWorld('electron', {
       'addCommand',
       'addAppActivity',
       'getLastAppActivity',
-      'updateActiveTime'
+      'updateActiveTime',
+      'getAllShortcuts',
+      'addShortcut',
+      'deleteShortcut',
+      'getAllApplications',
+      'addApplication',
+      'addApplications'
     ];
     // 检查频道名是否在列表中
     if (validOperations.includes(operation)) {

@@ -11,7 +11,7 @@
 
 CREATE TABLE IF NOT EXISTS Shortcuts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  combination TEXT NOT NULL,  -- 'Ctrl+Shift+A',
+  combination TEXT UNIQUE,  -- 'Ctrl+Shift+A',
   globe TEXT NOT NULL,  -- 'Global', 'In App'
   type TEXT NOT NULL, -- 'Application', 'Website', 'File', 'Opening Window', 'Layout', 'Operation'
   applicationName TEXT,
@@ -37,19 +37,17 @@ CREATE TABLE IF NOT EXISTS AppActivity (
 
 CREATE TABLE IF NOT EXISTS LayoutWindow (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT NOT NULL,
   appName TEXT NOT NULL,
-  windowTitle TEXT NOT NULL,
+  windowTitle TEXT,
   layoutId INTEGER NOT NULL,
   description TEXT,
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  appName TEXT NOT NULL,
-  windowTitle TEXT NOT NULL,
-  layoutId INTEGER NOT NULL,
-  type TEXT NOT NULL DEFAULT "Window", -- 'Application', 'Website', 'File', 'Window'
+  windowPath TEXT,
   initialTime DATETIME DEFAULT CURRENT_TIMESTAMP,
   latestTime DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (layoutId) REFERENCES Layout(layoutId) ON DELETE CASCADE
 );
+
 
 -- 创建 Layouts 表
 CREATE TABLE IF NOT EXISTS Layout (
@@ -72,7 +70,7 @@ CREATE TABLE IF NOT EXISTS Task (
   taskDescription TEXT,
   taskType TEXT NOT NULL, -- 'Productivity', 'Entertainment', 'Learning', 'Others'
   taskStatus TEXT NOT NULL, -- 'In Progress', 'Completed', 'Abandoned'
-  taskPriority TEXT NOT NULL, -- 'High', 'Medium', 'Low', 'Common'
+  taskPriority TEXT NOT NULL, -- 'High', 'Medium', 'Low', 'None'
   taskDeadline DATETIME,
   lastExecutionTime DATETIME,
   createTime DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -104,3 +102,24 @@ WHERE NOT EXISTS (SELECT * FROM Task)
 UNION ALL
 SELECT 'Entertaining, surfing the Internet', 'Entertainment', 'In Progress', 'Medium'
 WHERE NOT EXISTS (SELECT * FROM Task);
+
+INSERT OR IGNORE INTO Shortcuts (combination, globe, type, applicationName, websiteUrl)
+SELECT 'Option+S+G', 'In-app', 'Website', 'Safari', 'https://www.google.com'
+UNION ALL
+SELECT 'Option+S+Y', 'In-app', 'Website', 'Safari', 'https://www.youtube.com'
+UNION ALL
+SELECT 'Option+S+B', 'In-app', 'Website', 'Safari', 'https://www.bing.com';
+
+INSERT OR IGNORE INTO Shortcuts (combination, globe, type, applicationName)
+SELECT 'Ctrl+Option+S', 'Global', 'Application', 'Safari'
+UNION ALL
+SELECT 'Ctrl+Option+C', 'Global', 'Application', 'Visual Studio Code'
+UNION ALL
+SELECT 'Ctrl+Option+W', 'Global', 'Application', 'WeChat';
+
+INSERT OR IGNORE INTO Shortcuts (combination, globe, type, operationType)
+SELECT 'Ctrl+Option+Left', 'Global', 'Operation', 'Left Half'
+UNION ALL
+SELECT 'Ctrl+Option+Right', 'Global', 'Operation', 'Right Half'
+UNION ALL
+SELECT 'Ctrl+Option+Left+Right', 'Global', 'Operation', 'Full Screen';

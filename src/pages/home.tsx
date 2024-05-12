@@ -92,7 +92,7 @@ const Home = () => {
               task={currentTask}
               editMode={editMode}
               setEditMode={setEditMode}
-              setIsLoading={setIsLoading}
+              // setIsLoading={setIsLoading}
             />
           )}
         </div>

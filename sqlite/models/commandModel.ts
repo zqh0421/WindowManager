@@ -1,29 +1,5 @@
 import db from '../db';
 import { Layout } from '@/api/chat';
-// CREATE TABLE IF NOT EXISTS LayoutWindow (
-//   id INTEGER PRIMARY KEY AUTOINCREMENT,
-//   appName TEXT NOT NULL,
-//   windowTitle TEXT NOT NULL,
-//   windowManagement TEXT NOT NULL,
-//   layoutId INTEGER NOT NULL,
-//   description TEXT,
-//   windowPath TEXT,
-//   initialTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-//   latestTime DATETIME DEFAULT CURRENT_TIMESTAMP
-//   FOREIGN KEY (layoutId) REFERENCES Layout(layoutId) ON DELETE CASCADE
-// );
-
-// -- 创建 Layouts 表
-// CREATE TABLE IF NOT EXISTS Layout (
-//   layoutId INTEGER PRIMARY KEY AUTOINCREMENT,
-//   taskId INTEGER,
-//   commandId INTEGER,
-//   description TEXT NOT NULL,
-//   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-//   isSelected INTEGER DEFAULT 0,  -- 0表示未选择，1表示已选择
-//   FOREIGN KEY (taskId) REFERENCES Task(id),
-//   FOREIGN KEY (commandHistoryId) REFERENCES CommandHistory(id),
-// );
 
 // 添加命令执行记录
 export async function addCommand(

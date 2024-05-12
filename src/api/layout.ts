@@ -4,11 +4,12 @@ import type { Layout } from '@/api/chat';
 
 export const getLayoutBasedOnCommand = async (
   command: string,
+  apps: string[],
   setStage: Dispatch<SetStateAction<string>>,
   type: string = 'command'
 ): Promise<Layout[]> => {
   setStage('Getting window details...');
-  const startTime = Date.now();
+  // const startTime = Date.now();
   try {
     const temp = await window.electron.getAllWindowsDetail();
     console.log(temp);
@@ -24,7 +25,7 @@ export const getLayoutBasedOnCommand = async (
             t.appName === value.appName
         )
     );
-    const runTime1 = (Date.now() - startTime) / 1000;
+    // const runTime1 = (Date.now() - startTime) / 1000;
 
     setStage('Planning layout...');
 
@@ -36,8 +37,11 @@ export const getLayoutBasedOnCommand = async (
       If necessary, please provide at least three ways of layouts even for the same task since different users have their own preference.
       Windows in the same layout should not overlap.
       
-      Currently open windows are as follows: 
+      
       User's Command: ${command}
+      Available Applications:
+      ${apps && apps.join('\n')}
+      Currently open windows: 
       title:
       appName, windowTitle
       items:
@@ -76,11 +80,11 @@ export const getLayoutBasedOnCommand = async (
         }
       ]
     `);
-    const runTime2 = (Date.now() - startTime) / 1000;
+    // const runTime2 = (Date.now() - startTime) / 1000;
     setStage('');
     console.log(layouts);
     // todo
-    window.electron.dbQuery('addCommand', [command, layouts, runTime1, runTime2]);
+    // window.electron.dbQuery('addCommand', [command, layouts, runTime1, runTime2]);
     if (type === 'task') {
       // TODO: 列表里添加task
     }

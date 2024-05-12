@@ -12,7 +12,8 @@ import {
   executePlatformSpecificCommand,
   parseTitlesFromStdout,
   parseWindowsInfoFromStdout,
-  executePlatformSpecificCommandforLayout
+  executePlatformSpecificCommandforLayout,
+  applicationListResultProcessor
 } from './utils';
 import { models } from '../sqlite/index';
 import { LayoutWindow } from '@/api/chat';
@@ -76,7 +77,7 @@ const registerHandlers = (win: BrowserWindow | null) => {
   });
 
   ipcMain.handle('get-all-applications', async () => {
-    return await executePlatformSpecificCommand(getAllApplications, parseWindowsInfoFromStdout);
+    return await executePlatformSpecificCommand(getAllApplications, applicationListResultProcessor);
   });
 
   // 事件监听 - 记录应用活动

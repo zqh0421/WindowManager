@@ -37,7 +37,7 @@ function createWindow() {
     // y: 0,
     x: width / 4, // 在屏幕中心
     y: height * 0.1, // 从屏幕顶部开始
-    resizable: false, // 不允许用户调整窗口尺寸
+    // resizable: false, // 不允许用户调整窗口尺寸
     movable: false, // 允许用户移动窗口
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     frame: false, // 隐藏默认的窗口标题栏

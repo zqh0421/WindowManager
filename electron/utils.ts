@@ -43,6 +43,15 @@ export const executePlatformSpecificCommand = async (
   });
 };
 
+export const applicationListResultProcessor = (stdout: string) => {
+  // Split the output into an array by new lines or other delimiters
+  const apps = stdout.trim().split('.app, '); // Adjust delimiter based on actual stdout format
+  // Remove '.app' suffix from each app name
+  // const processedApps = apps.map(app => app.replace(/\.app$/, ''));
+
+  return apps;
+};
+
 export const parseTitlesFromStdout = (stdout: string) => {
   return stdout
     .split(',')
@@ -63,6 +72,60 @@ export const parseWindowsInfoFromStdout = (stdout: string) => {
         size: parts[3]
       };
     });
+};
+
+const generateLayoutCommand = (
+  appName: string,
+  windowTitle: string | undefined,
+  px: number,
+  py: number,
+  sx: number,
+  sy: number
+) => {
+  return `
+    tell application "System Events"
+      if exists (process "${appName}") then
+        tell process "${appName}"
+          if exists (the first window whose name contains "${windowTitle}") then
+            set theWindow to (first window whose name contains "${windowTitle}")
+            set position of theWindow to {${px}, ${py}}
+            set size of theWindow to {${sx}, ${sy}}
+            activate
+            perform action "AXRaise" of theWindow
+          else
+            if exists (first window) then
+              set firstWindow to first window
+              set position of firstWindow to {${px}, ${py}}
+              set size of firstWindow to {${sx}, ${sy}}
+              activate
+              perform action "AXRaise" of firstWindow
+            else -- if the app is running but no window is open
+              tell application "${appName}"
+                activate
+              end tell
+              set firstWindow to first window
+              set position of firstWindow to {${px}, ${py}}
+              set size of firstWindow to {${sx}, ${sy}}
+              perform action "AXRaise" of firstWindow
+            end if
+          end if
+        end tell
+      else
+        tell application "${appName}"
+          activate
+        end tell
+        if exists (application process "${appName}") then
+          tell process "${appName}"
+            activate
+            set firstWindow to first window
+            set position of firstWindow to {${px}, ${py}}
+              set size of firstWindow to {${sx}, ${sy}}
+            perform action "AXRaise" of theWindow
+          end tell
+        end if
+      end if
+    end tell
+    `;
 };
 
 export const executePlatformSpecificCommandforLayout = async (
@@ -88,123 +151,82 @@ export const executePlatformSpecificCommandforLayout = async (
             end repeat
           end tell
         `;
-
-        const activateWindowsScript: string = `
-          tell application "System Events"
-            ${windows
-              .map(
-                (win) => `
-              if exists (application process "${win.appName}") then
-              tell process "${win.appName}" to activate
-              tell process "${win.appName}"
-                set theWindow to the first window whose name is "${win.windowTitle}"
-                if exists theWindow then
-                  perform action "AXRaise" of theWindow
-                end if
-              end tell
-              end if
-            `
-              )
-              .join('\n')}
-          end tell
-        `;
         let layoutCommand: string = ``;
 
         switch (layoutType) {
           case 'Full Screen': {
-            layoutCommand = `
-              tell application "System Events"
-                if exists (application process "${windows[0].appName}") then
-                  tell process "${windows[0].appName}"
-                    set theWindow to first window whose name contains "${windows[0].windowTitle}"
-                    if exists theWindow then
-                      set position of theWindow to {0, 0}
-                      set size of theWindow to {${width}, ${height}}
-                    end if
-                  end tell
-                end if
-              end tell
-            `;
+            layoutCommand = generateLayoutCommand(
+              windows[0].appName,
+              windows[0].windowTitle,
+              0,
+              0,
+              width,
+              height
+            );
             break;
           }
           case 'Left Half + Right Half': {
             let i = 0;
-            layoutCommand = `
-              tell application "System Events"
-                ${windows
-                  .map(
-                    (win) => `
-                if exists (application process "${win.appName}") then
-                  tell process "${win.appName}"
-                    set position of window "${win.windowTitle}" to ${i++ == 0 ? `{0, 0}` : `{${width / 2}, 0}`}
-                    set size of window "${win.windowTitle}" to {${width / 2}, ${height}}
-                  end tell
-                end if
-                `
-                  )
-                  .join('\n')}
-              end tell
-            `;
+            layoutCommand = windows
+              .map((win) => {
+                return generateLayoutCommand(
+                  win.appName,
+                  win.windowTitle,
+                  i++ == 0 ? 0 : width / 2,
+                  0,
+                  width / 2,
+                  height
+                );
+              })
+              .join('\n');
             break;
           }
           case 'Top Half + Bottom Half': {
-            let j = 0;
-            layoutCommand = `
-              tell application "System Events"
-                ${windows
-                  .map(
-                    (win) => `
-                if exists (application process "${win.appName}") then
-                  tell process "${win.appName}"
-                    set position of window "${win.windowTitle}" to ${j++ == 0 ? `{0, 0}` : `{0, ${Math.floor(height / 2)}}`}
-                    set size of window "${win.windowTitle}" to {${width}, 50 + ${Math.floor(height / 2)}}
-                  end tell
-                end if
-                `
-                  )
-                  .join('\n')}
-              end tell
-            `;
+            let i = 0;
+            layoutCommand = windows
+              .map((win) => {
+                return generateLayoutCommand(
+                  win.appName,
+                  win.windowTitle,
+                  0,
+                  0,
+                  width,
+                  i++ == 0 ? 0 : height / 2
+                );
+              })
+              .join('\n');
             break;
           }
           case 'First Fourth + Last Three Fourth': {
-            let k = 0;
-            layoutCommand = `
-              tell application "System Events"
-                ${windows
-                  .map(
-                    (win) => `
-                if exists (application process "${win.appName}") then
-                  tell process "${win.appName}"
-                    set position of window "${win.windowTitle}" to ${k == 0 ? `{0, 0}` : `{${width / 4}, 0}`}
-                    set size of window "${win.windowTitle}" to ${k++ == 0 ? `{${width / 4}, ${height}}` : `{${(width / 4) * 3}, ${height}}`}
-                  end tell
-                end if
-                `
-                  )
-                  .join('\n')}
-              end tell
-            `;
+            let i = 0;
+            layoutCommand = windows
+              .map((win) => {
+                return generateLayoutCommand(
+                  win.appName,
+                  win.windowTitle,
+                  i == 0 ? 0 : width / 4,
+                  0,
+                  i++ == 0 ? width / 4 : (width / 4) * 3,
+                  height
+                );
+              })
+              .join('\n');
             break;
           }
           case 'First Three Fourths + Last Fourth': {
-            let n = 0;
-            layoutCommand = `
-              tell application "System Events"
-                ${windows
-                  .map(
-                    (win) => `
-                if exists (application process "${win.appName}") then
-                  tell process "${win.appName}"
-                    set position of window "${win.windowTitle}" to ${n == 0 ? `{0, 0}` : `{${(width / 4) * 3}, 0}`}
-                    set size of window "${win.windowTitle}" to ${n++ == 0 ? `{${(width / 4) * 3}, ${height}}` : `{${width / 4}, ${height}}`}
-                  end tell
-                end if
-                `
-                  )
-                  .join('\n')}
-              end tell
-            `;
+            let i = 0;
+            layoutCommand = windows
+              .map((win) => {
+                return generateLayoutCommand(
+                  win.appName,
+                  win.windowTitle,
+                  i == 0 ? 0 : (width / 4) * 3,
+                  0,
+                  i++ == 0 ? (width / 4) * 3 : width / 4,
+                  height
+                );
+              })
+              .join('\n');
             break;
           }
           default: {
@@ -212,7 +234,7 @@ export const executePlatformSpecificCommandforLayout = async (
             break;
           }
         }
-        command = `osascript -e '${minimizeOtherWindowsScript} ${layoutCommand} ${activateWindowsScript}'`;
+        command = `osascript -e '${minimizeOtherWindowsScript} ${layoutCommand}'`;
         break;
       }
       case 'linux': {

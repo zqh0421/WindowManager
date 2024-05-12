@@ -1,15 +1,15 @@
 {
   "name": "windowmanager",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.10-beta",
   "description": "A GPT-powered window manager.",
   "author": {
     "name": "Qianhui Zhao",
     "email": "qianhuiz@andrew.cmu.edu"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "dev": "NODE_ENV=development vite",
+    "build": "tsc && vite build && NODE_ENV=production electron-builder",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepare": "husky",
@@ -81,5 +81,14 @@
     "*.{json,js,ts,jsx,tsx,html}": [
       "prettier --write --ignore-unknown"
     ]
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "extraResources": [
+          "./sqlite/schema/schema.sql"
+        ]
+      }
+    }
   }
 }
